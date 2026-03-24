@@ -3,6 +3,9 @@ use clap::Parser;
 mod cli;
 mod commands;
 mod config;
+mod date_parser;
+mod runner;
+mod utils;
 
 use cli::Args;
 
