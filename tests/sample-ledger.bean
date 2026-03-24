@@ -1,0 +1,101 @@
+; Sample ledger for tests
+
+; Use some plugins for convenience:
+; Imply prices from any conversions.
+plugin "beancount.plugins.implicit_prices"
+
+; accounts
+1900-01-01 open Assets:Bank:Bank03581 CHF
+1900-01-01 open Assets:Bank:Checking EUR
+1900-01-01 open Assets:Bank:Savings EUR
+1900-01-01 open Assets:Cash:Pocket-Money EUR
+1900-01-01 open Assets:Cash:BAM BAM
+1900-01-01 open Assets:Cash:USD USD
+2025-01-01 open Equity:Opening-Balances EUR
+1900-01-01 open Equity:Stocks
+1900-01-01 open Income:Salary
+1900-01-01 open Income:Other
+; expenses
+1900-01-01 open Expenses:Accommodation
+1900-01-01 open Expenses:Food
+1900-01-01 open Expenses:Sweets
+1900-01-01 open Expenses:Transport
+1900-01-01 open Expenses:Transport:Bus
+1900-01-01 open Expenses:Transport:Train
+
+; prices
+
+2025-01-01 price EUR  1.95583 BAM
+2025-01-01 price EUR  1.0268  USD
+2025-01-01 price EUR  1.1325  USD
+2025-01-10 price CHF  1.0647  EUR
+2025-03-30 price ABC  1.20    EUR
+2025-04-15 price ABC  1.35    EUR
+
+; transactions
+
+2025-01-01 * "Initial Balance"
+  Assets:Bank:Checking  1000 EUR
+  Equity:Opening-Balances  -1000 EUR
+
+2025-02-01 txn "Ice Cream Shop" "Ice Cream"
+  Expenses:Sweets  20 EUR
+  Assets:Cash:Pocket-Money
+
+2025-03-01 txn "Grocery Store" "Groceries"
+  Expenses:Food  100 EUR
+  Assets:Bank:Checking
+
+2025-03-15 txn "Employer" "Salary"
+  Assets:Bank:Checking  1000 EUR
+  Income:Salary  -1000 EUR
+
+2025-04-01 txn "Buy Stocks"
+  Equity:Stocks 5 ABC { 1.25 EUR }
+  Assets:Bank:Checking
+
+2025-04-02 txn "Buy more stocks"
+  Equity:Stocks 7 ABC { 1.30 EUR }
+  Assets:Bank:Checking
+
+2025-05-01 txn "Supermarket" "piće"
+  Expenses:Food 25 BAM
+  Assets:Cash:BAM
+
+2025-06-04 txn "Metro" "public transport"
+  Expenses:Transport 7 USD
+  Assets:Cash:USD
+
+2025-07-15 txn "Anonymous Org." "Illicit money"
+  Assets:Bank:Bank03581  3000 CHF
+  Income:Other
+
+2025-08-01 txn "Transfer to savings"
+  Assets:Bank:Savings  500 EUR
+  Assets:Bank:Checking
+
+2025-08-15 txn "Holiday" "Bus"
+  Expenses:Transport:Bus  10 EUR
+  Assets:Bank:Checking
+
+2025-08-16 txn "Holiday" "Train"
+  Expenses:Transport:Train  15 EUR
+  Assets:Bank:Checking
+
+2025-09-01 * "Großer Priel Klettersteig" ""
+  Expenses:Accommodation 25 EUR
+  Assets:Cash:Pocket-Money
+
+2025-09-02 query "holidays" "select * where payee ~ 'holiday' and account ~ 'expenses'"
+
+2025-09-09 txn "Sell complete lot"
+  Equity:Stocks -5 ABC { 1.25 EUR, 2025-04-01 } @ 1.35 EUR
+  Assets:Bank:Checking
+
+2025-09-10 txn "Sell some stock" "split lot"
+  Equity:Stocks -3 ABC { 1.30 EUR, 2025-04-02 } @ 1.35 EUR
+  Assets:Bank:Checking
+
+2025-11-07 balance Assets:Bank:Checking  595.47 EUR
+2025-11-08 balance Assets:Bank:Savings  5775.09 EUR
+2025-11-09 balance Assets:Cash:Pocket-Money  0.00 EUR
