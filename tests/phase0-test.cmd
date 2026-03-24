@@ -1,0 +1,5 @@
+rledger query -f json tests/sample-ledger.bean "SELECT date, currency, amount FROM #prices"
+rledger query -f json tests/sample-ledger.bean "SELECT date, account, amount FROM #balances"
+rledger query -f json tests/sample-ledger.bean "SELECT account, sum(convert(position, 'EUR')) GROUP BY account"
+rledger query -f json tests/sample-ledger.bean "SELECT account, cost_number WHERE cost_number IS NOT NULL LIMIT 5"
+rledger query -f json tests/sample-ledger.bean "SELECT account, value(SUM(position)) GROUP BY account"

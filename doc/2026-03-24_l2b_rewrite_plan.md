@@ -99,6 +99,77 @@ Validate rledger behavior before committing to any implementation.
 5. For any missing feature: either find the rledger equivalent syntax, or file an issue upstream
 6. **Gate**: do not start Phase 1 until all 6 commands have a confirmed working query pattern
 
+### Phase 0 results
+
+The queries from `/tests/phase0-test.cmd` have been executed with the following results:
+
+```sh
+> rledger query -f json tests/sample-ledger.bean "SELECT date, currency, amount FROM #prices"
+> rledger query -f json tests/sample-ledger.bean "SELECT date, account, amount FROM #balances"
+
+error: failed to parse query: parse error at position 35: found '.' expected identifie', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '-', '"', ''', '*', ' ', ' ', '
+', ';', or end of input
+
+> rledger query -f json tests/sample-ledger.bean "SELECT account, sum(convert(position, 'EUR')) GROUP BY account"
+
+{
+  "columns": [
+    "account",
+    "sum"
+  ],
+  "row_count": 16,
+  "rows": [
+    {
+      "account": "Assets:Bank:Bank03581",
+      "sum": {
+        "positions": [
+          {
+            "currency": "EUR",
+            "number": "3194.1000"
+          }
+        ]
+      }
+    },
+...
+
+> rledger query -f json tests/sample-ledger.bean "SELECT account, cost_number WHERE cost_number IS NOT NULL LIMIT 5"
+
+{
+  "columns": [
+    "account",
+    "cost_number"
+  ],
+  "row_count": 4,
+  "rows": [
+    {
+      "account": "Equity:Stocks",
+      "cost_number": "1.25"
+    },
+...
+
+> rledger query -f json tests/sample-ledger.bean "SELECT account, value(SUM(position)) GROUP BY account"
+
+{
+  "columns": [
+    "account",
+    "value"
+  ],
+  "row_count": 16,
+  "rows": [
+    {
+      "account": "Assets:Bank:Bank03581",
+      "value": {
+        "positions": [
+          {
+            "currency": "CHF",
+            "number": "3000"
+          }
+        ]
+      }
+    },
+...
+```
+
 ### Phase 1: Rust CLI — *~4-6 weeks*
 
 Full rewrite. No intermediate Python step — go straight to Rust.

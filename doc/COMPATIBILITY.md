@@ -301,16 +301,16 @@ These features are used in ledger2bql but not confirmed to work in rledger. Veri
 rledger query -f json tests/sample_ledger.bean "QUERY"
 ```
 
-| Feature | Used in | BQL query to test | Status |
-|---------|---------|-------------------|--------|
-| `convert(position, 'EUR')` | `bal`, `reg` with `--exchange` | `SELECT account, sum(convert(position, 'EUR')) GROUP BY account` | ☐ |
-| `value(position)` | `lots` | `SELECT account, value(SUM(position)) GROUP BY account` | ☐ |
-| `cost_number` | `lots` | `SELECT account, cost_number WHERE cost_number IS NOT NULL LIMIT 5` | ☐ |
-| `#balances` system table | `assert` | `SELECT date, account, amount FROM #balances` | ☐ |
-| `#prices` system table | `price` | `SELECT date, currency, amount FROM #prices` | ☐ |
-| JSON schema for Amount | all | Check field names in `-f json` output | ☐ |
-| JSON schema for Position | all | Check field names in `-f json` output | ☐ |
-| Android ARM64 binary | runtime | Install and run on Termux | ☐ |
+| Feature                    | Used in                        | BQL query to test                                                   | Status |
+|----------------------------|--------------------------------|---------------------------------------------------------------------|--------|
+| `convert(position, 'EUR')` | `bal`, `reg` with `--exchange` | `SELECT account, sum(convert(position, 'EUR')) GROUP BY account`    | ☐      |
+| `value(position)`          | `lots`                         | `SELECT account, value(SUM(position)) GROUP BY account`             | ☐      |
+| `cost_number`              | `lots`                         | `SELECT account, cost_number WHERE cost_number IS NOT NULL LIMIT 5` | ☐      |
+| `#balances` system table   | `assert`                       | `SELECT date, account, amount FROM #balances`                       | ☐      |
+| `#prices` system table     | `price`                        | `SELECT date, currency, amount FROM #prices`                        | ☐      |
+| JSON schema for Amount     | all                            | Check field names in `-f json` output                               | ☐      |
+| JSON schema for Position   | all                            | Check field names in `-f json` output                               | ☐      |
+| Android ARM64 binary       | runtime                        | Install and run on Termux                                           | ☐      |
 
 ---
 
