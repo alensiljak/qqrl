@@ -38,7 +38,9 @@ pub fn parse_date_range(
     if date_range_str.contains("..") {
         let parts: Vec<&str> = date_range_str.split("..").collect();
         if parts.len() != 2 {
-            return Err(DateParseError::InvalidDateFormat(date_range_str.to_string()));
+            return Err(DateParseError::InvalidDateFormat(
+                date_range_str.to_string(),
+            ));
         }
 
         let start_part = parts[0];
@@ -91,7 +93,11 @@ pub fn parse_date_range(
             let next = date + Duration::days(1);
             next.format("%Y-%m-%d").to_string()
         }
-        _ => return Err(DateParseError::InvalidDateFormat(date_range_str.to_string())),
+        _ => {
+            return Err(DateParseError::InvalidDateFormat(
+                date_range_str.to_string(),
+            ))
+        }
     };
 
     Ok((Some(start), Some(end)))
@@ -112,15 +118,24 @@ mod tests {
     fn parse_date_range_shorthand() {
         assert_eq!(
             parse_date_range("2025").unwrap(),
-            (Some("2025-01-01".to_string()), Some("2026-01-01".to_string()))
+            (
+                Some("2025-01-01".to_string()),
+                Some("2026-01-01".to_string())
+            )
         );
         assert_eq!(
             parse_date_range("2025-08").unwrap(),
-            (Some("2025-08-01".to_string()), Some("2025-09-01".to_string()))
+            (
+                Some("2025-08-01".to_string()),
+                Some("2025-09-01".to_string())
+            )
         );
         assert_eq!(
             parse_date_range("2025-08-15").unwrap(),
-            (Some("2025-08-15".to_string()), Some("2025-08-16".to_string()))
+            (
+                Some("2025-08-15".to_string()),
+                Some("2025-08-16".to_string())
+            )
         );
     }
 

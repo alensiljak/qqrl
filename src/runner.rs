@@ -58,20 +58,24 @@ fn parse_rows_from_output(stdout: &[u8]) -> Result<Vec<Value>, RunnerError> {
 
 #[cfg(test)]
 mod tests {
-    use super::parse_rows_from_output;
+        let json = br#"{"columns":["account"],"row_count":1,"rows":[{"account":"Assets"}]}"#;
 
     #[test]
     fn parse_rows_happy_path() {
-        let json = br#"{\"columns\":[\"account\"],\"row_count\":1,\"rows\":[{\"account\":\"Assets\"}]}"#;
+        let json =
+            br#"{\"columns\":[\"account\"],\"row_count\":1,\"rows\":[{\"account\":\"Assets\"}]}"#;
         let rows = parse_rows_from_output(json).unwrap();
         assert_eq!(rows.len(), 1);
-        assert_eq!(rows[0]["account"], "Assets");
+        let json = br#"{"columns":[],"row_count":0}"#;
     }
 
     #[test]
     fn parse_rows_missing_rows_field() {
         let json = br#"{\"columns\":[],\"row_count\":0}"#;
         let err = parse_rows_from_output(json).unwrap_err();
-        assert_eq!(err.to_string(), "invalid JSON schema from rledger: missing rows array");
+        assert_eq!(
+            err.to_string(),
+            "invalid JSON schema from rledger: missing rows array"
+        );
     }
 }

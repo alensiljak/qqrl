@@ -78,8 +78,8 @@ pub fn parse_account_params(account_regex: &[String]) -> AccountParams {
 
 /// Parse amount filter like `>100EUR` into operator, decimal value, and optional currency.
 pub fn parse_amount_filter(amount_str: &str) -> Result<AmountFilter, UtilsError> {
-    let regex = Regex::new(r"(?i)^([><]=?|=)?(-?\d+\.?\d*)([A-Z]{3})?")
-        .expect("amount regex must compile");
+    let regex =
+        Regex::new(r"(?i)^([><]=?|=)?(-?\d+\.?\d*)([A-Z]{3})?").expect("amount regex must compile");
 
     let captures = regex
         .captures(amount_str)

@@ -13,13 +13,11 @@ use crate::cli::CommonOptions;
 ///   qqrl a Assets
 ///   qqrl assert --date 2025-12-31
 pub fn run(_opts: CommonOptions) -> Result<(), Box<dyn std::error::Error>> {
-    return Err(
-        "The 'assert' command is not yet available.\n\
+    return Err("The 'assert' command is not yet available.\n\
          It requires rledger to support the #balances system table.\n\
          \n\
          Workaround: Use 'qqrl balance' to verify account balances manually.\n\
          \n\
          Pending feature request: https://github.com/rustledger/rustledger/issues/..."
-            .into(),
-    );
+        .into());
 }
