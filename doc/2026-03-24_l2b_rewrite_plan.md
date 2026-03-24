@@ -170,7 +170,36 @@ error: failed to parse query: parse error at position 35: found '.' expected ide
 ...
 ```
 
-### Phase 1: Rust CLI — *~4-6 weeks*
+### Revised Plan Based on Phase 0 Results
+
+**Summary**: 4 of 6 commands are unblocked and ready for Phase 1. The `assert` and `price` commands depend on rledger's `#balances` and `#prices` system tables, which are pending feature requests.
+
+**Unblocked commands** (implement in Phase 1):
+
+- `bal` (balance) — uses standard BQL, `convert(position, 'EUR')` works ✅
+- `reg` (register) — uses standard BQL ✅
+- `query` (named queries) — regex scan of .bean file ✅
+- `lots` (investment lots) — uses `cost_number`, `value(SUM(position))` ✅
+
+**Blocked commands** (Phase 1.5 or Phase 2, pending rledger):
+
+- `assert` (balance assertions) — blocked on `#balances` system table ⏳
+- `price` (price history) — blocked on `#prices` system table ⏳
+
+**Phase 1 Strategy**:
+
+1. Implement full CLI skeleton with all 6 commands defined
+2. Implement the 4 unblocked commands (bal, reg, query, lots)
+3. Add placeholder error messages for `assert` and `price` that point to the rledger feature request
+4. Ship Phase 1 with 4/6 commands working
+
+When rledger releases `#balances` and `#prices` support, implement Phase 1.5 to complete the remaining 2 commands (no architectural changes needed).
+
+**Revised timeline**: ~3–4 weeks for Phase 1 (instead of 4–6 weeks)
+
+---
+
+### Phase 1: Rust CLI — *~3-4 weeks*
 
 Full rewrite. No intermediate Python step — go straight to Rust.
 
