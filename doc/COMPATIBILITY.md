@@ -194,7 +194,7 @@ ledger2bql reg -X EUR        # ⚠️ Phase 0 risk
 
 ```sh
 # Test commands (requires named query in .bean file)
-# sample_ledger.bean contains: 2025-09-02 query "holidays" "select * where ..."
+# sample-ledger.bean contains: 2025-09-02 query "holidays" "select * where ..."
 ledger2bql query holidays
 ledger2bql query HOLIDAYS      # case-insensitive match
 ledger2bql query holi          # partial match
@@ -298,7 +298,7 @@ ledger2bql price -c USD
 These features are used in ledger2bql but not confirmed to work in rledger. Verify manually with:
 
 ```sh
-rledger query -f json tests/sample_ledger.bean "QUERY"
+rledger query -f json tests/sample-ledger.bean "QUERY"
 ```
 
 | Feature                    | Used in                        | BQL query to test                                                   | Status |

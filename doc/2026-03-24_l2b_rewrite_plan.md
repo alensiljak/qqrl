@@ -87,7 +87,7 @@ Common options (all commands): `--begin`, `--end`, `--date-range`, `--sort`, `--
 
 Validate rledger behavior before committing to any implementation.
 
-1. Install rledger, run `rledger query -f json tests/sample_ledger.bean "..."` for each query pattern used in ledger2bql (all 6 commands)
+1. Install rledger, run `rledger query -f json tests/sample-ledger.bean "..."` for each query pattern used in ledger2bql (all 6 commands)
 2. Document exact JSON schema — field names, how `Amount`, `Position`, `Inventory` are serialized
 3. Test these specifically (high risk — not in rledger BQL docs):
    - `convert(position, 'EUR')` — used by `--exchange/-X`
@@ -229,8 +229,8 @@ Full rewrite. No intermediate Python step — go straight to Rust.
 **Tests**
 
 - Port the existing pytest suite to Rust integration tests
-- Each test: build expected BQL query → run against `sample_ledger.bean` via rledger → assert formatted output
-- Use the same `tests/sample_ledger.bean` data file
+- Each test: build expected BQL query → run against `sample-ledger.bean` via rledger → assert formatted output
+- Use the same `tests/sample-ledger.bean` data file
 
 **Release**
 
