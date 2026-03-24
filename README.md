@@ -6,6 +6,10 @@ Quick Query for Rust Ledger
 
 `qqrl` is a rewrite of [ledger2bql](https://github.com/alensiljak/ledger2bql) with the change of underlying engine from Python Beancount to Rust Ledger.
 
+## Installation
+
+For the moment, the app can only be installed by building from the source, as it is in in a very early stage of development.
+
 ## Links
 
 - Ledger2Bql [repo](https://github.com/alensiljak/ledger2bql)
