@@ -131,21 +131,21 @@ ledger2bql bal -X EUR        # ⚠️ requires convert() — Phase 0 risk
 
 | Feature                   | ledger2bql | qqrl | Notes                                  |
 |---------------------------|------------|------|----------------------------------------|
-| Basic balances            | ✓          | ☐    |                                        |
-| Account filter (regex)    | ✓          | ☐    |                                        |
-| Multiple account patterns | ✓          | ☐    |                                        |
-| Exclusion (`not`)         | ✓          | ☐    |                                        |
-| `--begin` / `--end`       | ✓          | ☐    |                                        |
-| `--date-range`            | ✓          | ☐    |                                        |
-| `--currency`              | ✓          | ☐    |                                        |
-| `--amount`                | ✓          | ☐    | Post-BQL filter on aggregated balances |
-| `--total` / `-T`          | ✓          | ☐    | Grand total row                        |
-| `--depth` / `-D`          | ✓          | ☐    | Limit account tree depth               |
-| `--zero` / `-Z`           | ✓          | ☐    | Exclude zero balances                  |
-| `--hierarchy` / `-H`      | ✓          | ☐    | Parent account aggregation             |
-| `--sort` / `-S`           | ✓          | ☐    |                                        |
-| `--limit`                 | ✓          | ☐    |                                        |
-| `--exchange` / `-X`       | ✓          | ☐    | ⚠️ `convert()` — Phase 0                |
+| Basic balances            | ✓          | ✓    |                                        |
+| Account filter (regex)    | ✓          | ✓    |                                        |
+| Multiple account patterns | ✓          | ✓    |                                        |
+| Exclusion (`not`)         | ✓          | ✓    |                                        |
+| `--begin` / `--end`       | ✓          | ✓    |                                        |
+| `--date-range`            | ✓          | ✓    |                                        |
+| `--currency`              | ✓          | ✓    |                                        |
+| `--amount`                | ✓          | ✓    | Post-BQL filter on aggregated balances |
+| `--total` / `-T`          | ✓          | ✓    | Grand total row                        |
+| `--depth` / `-D`          | ✓          | ✓    | Limit account tree depth               |
+| `--zero` / `-Z`           | ✓          | ✓    | Exclude zero balances                  |
+| `--hierarchy` / `-H`      | ✓          | ✓    | Parent account aggregation             |
+| `--sort` / `-S`           | ✓          | ✓    |                                        |
+| `--limit`                 | ✓          | ✓    |                                        |
+| `--exchange` / `-X`       | ✓          | ☐    | ⚠️ `convert()` not in rledger           |
 | `--no-pager`              | ✓          | ☐    |                                        |
 
 ---

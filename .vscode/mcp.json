@@ -2,10 +2,8 @@
   "servers": {
     "serena": {
       "type": "stdio",
-      "command": "uv",
+      "command": "uvx",
       "args": [
-        "tool",
-        "run",
         "--from",
         "git+https://github.com/oraios/serena",
         "serena",

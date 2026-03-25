@@ -44,9 +44,9 @@ pub enum Command {
 /// Options shared by all commands (except query)
 #[derive(Debug, Parser)]
 pub struct CommonOptions {
-    /// Account pattern(s) to filter
-    #[arg(value_name = "PATTERN")]
-    pub account: Option<String>,
+    /// Account pattern(s) to filter (supports multiple: 'Assets not Bank @Employer')
+    #[arg(value_name = "PATTERN", num_args = 0..)]
+    pub account: Vec<String>,
 
     /// Start date (YYYY-MM-DD or date range format)
     #[arg(short, long)]
@@ -76,7 +76,7 @@ pub struct CommonOptions {
 
     /// Sort by field(s) — prefix with '-' for descending
     /// e.g., 'account', '-amount', 'date account'
-    #[arg(short = 'S', long)]
+    #[arg(short = 'S', long, allow_hyphen_values = true)]
     pub sort: Option<String>,
 
     /// Limit number of results
@@ -92,12 +92,20 @@ pub struct CommonOptions {
     pub no_pager: bool,
 
     /// Show account hierarchy (balance command only)
-    #[arg(long)]
+    #[arg(short = 'H', long)]
     pub hierarchy: bool,
 
     /// Include empty accounts (balance command only)
     #[arg(long)]
     pub empty: bool,
+
+    /// Limit account tree depth (balance command only)
+    #[arg(short = 'D', long)]
+    pub depth: Option<u32>,
+
+    /// Exclude accounts with zero balance (balance command only)
+    #[arg(short = 'Z', long)]
+    pub zero: bool,
 
     /// Ledger file path (overrides LEDGER_FILE env var)
     #[arg(long)]

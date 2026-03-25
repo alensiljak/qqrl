@@ -10,6 +10,14 @@ Quick Query for Rust Ledger
 
 For the moment, the app can only be installed by building from the source, as it is in in a very early stage of development.
 
+## Development
+
+Run tests:
+
+```sh
+cargo tests
+```
+
 ## Links
 
 - Ledger2Bql [repo](https://github.com/alensiljak/ledger2bql)
