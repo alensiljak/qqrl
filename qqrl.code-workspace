@@ -12,7 +12,8 @@
 			"rledger": true,
 			"cargo test": true,
 			"cargo clippy": true,
-			"cargo build": true
+			"cargo build": true,
+			"cargo fmt": true
 		}
 	}
 }

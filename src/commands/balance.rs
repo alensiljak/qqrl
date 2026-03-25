@@ -22,18 +22,17 @@ struct Position {
 struct BalanceRow {
     account: String,
     positions: Vec<Position>,
+    converted_positions: Option<Vec<Position>>,
+}
+
+#[derive(Debug, Clone)]
+struct BalanceTotals {
+    positions: Vec<Position>,
+    converted_positions: Option<Vec<Position>>,
 }
 
 /// Account balances command
 pub fn run(opts: CommonOptions) -> Result<(), Box<dyn std::error::Error>> {
-    if opts.exchange.is_some() {
-        return Err(
-            "The --exchange / -X option is not yet supported in the balance command.\n\
-             It requires rledger to support the convert() function."
-                .into(),
-        );
-    }
-
     let config = Config::load(opts.ledger.clone())?;
     let query = build_query(&opts);
     let rows = run_bql_query(&config, &query)?;
@@ -75,7 +74,7 @@ pub fn run(opts: CommonOptions) -> Result<(), Box<dyn std::error::Error>> {
         None
     };
 
-    print_table(&balance_rows, grand_total.as_deref());
+    print_table(&balance_rows, grand_total.as_ref(), opts.exchange.as_deref());
     Ok(())
 }
 
@@ -134,12 +133,18 @@ fn build_query(opts: &CommonOptions) -> String {
         where_clauses.push(format!("currency IN ('{list}')"));
     }
 
-    let mut query =
-        "SELECT account, units(sum(position)) as Balance GROUP BY account".to_string();
+    let select_clause = if let Some(exchange) = &opts.exchange {
+        format!(
+            "SELECT account, units(sum(position)) as Balance, sum(convert(position, '{exchange}')) as Converted"
+        )
+    } else {
+        "SELECT account, units(sum(position)) as Balance".to_string()
+    };
+
+    let mut query = format!("{select_clause} GROUP BY account");
     if !where_clauses.is_empty() {
-        // Insert WHERE before GROUP BY
         query = format!(
-            "SELECT account, units(sum(position)) as Balance WHERE {} GROUP BY account",
+            "{select_clause} WHERE {} GROUP BY account",
             where_clauses.join(" AND ")
         );
     }
@@ -184,29 +189,43 @@ fn parse_rows(json_rows: &[Value]) -> Result<Vec<BalanceRow>, Box<dyn std::error
             .ok_or("missing account field")?
             .to_string();
 
-        let balance_val = &row["Balance"];
-        let positions_json = balance_val["positions"]
-            .as_array()
-            .ok_or("missing positions array in Balance")?;
+        let positions = parse_inventory_positions(&row["Balance"], "Balance")?;
+        let converted_positions = row
+            .get("Converted")
+            .map(|value| parse_inventory_positions(value, "Converted"))
+            .transpose()?;
 
-        let mut positions = Vec::new();
-        for pos in positions_json {
-            let currency = pos["currency"]
-                .as_str()
-                .ok_or("missing currency in position")?
-                .to_string();
-            let number_str = pos["number"]
-                .as_str()
-                .ok_or("missing number in position")?;
-            let amount = number_str
-                .parse::<Decimal>()
-                .map_err(|_| format!("invalid decimal: {number_str}"))?;
-            positions.push(Position { currency, amount });
-        }
-
-        rows.push(BalanceRow { account, positions });
+        rows.push(BalanceRow {
+            account,
+            positions,
+            converted_positions,
+        });
     }
     Ok(rows)
+}
+
+fn parse_inventory_positions(
+    inventory: &Value,
+    label: &str,
+) -> Result<Vec<Position>, Box<dyn std::error::Error>> {
+    let positions_json = inventory["positions"]
+        .as_array()
+        .ok_or_else(|| format!("missing positions array in {label}"))?;
+
+    let mut positions = Vec::new();
+    for pos in positions_json {
+        let currency = pos["currency"]
+            .as_str()
+            .ok_or("missing currency in position")?
+            .to_string();
+        let number_str = pos["number"].as_str().ok_or("missing number in position")?;
+        let amount = number_str
+            .parse::<Decimal>()
+            .map_err(|_| format!("invalid decimal: {number_str}"))?;
+        positions.push(Position { currency, amount });
+    }
+
+    Ok(positions)
 }
 
 // ---------------------------------------------------------------------------
@@ -253,15 +272,23 @@ fn apply_amount_filters(
 fn apply_hierarchy(rows: Vec<BalanceRow>) -> Vec<BalanceRow> {
     // accumulate: account_name -> currency -> amount
     let mut totals: BTreeMap<String, HashMap<String, Decimal>> = BTreeMap::new();
+    let mut converted_totals: BTreeMap<String, HashMap<String, Decimal>> = BTreeMap::new();
 
     for row in &rows {
         let parts: Vec<&str> = row.account.split(':').collect();
         // Add this row's positions into every ancestor level (including itself)
         for depth in 1..=parts.len() {
             let account = parts[..depth].join(":");
-            let entry = totals.entry(account).or_default();
+            let entry = totals.entry(account.clone()).or_default();
             for pos in &row.positions {
                 *entry.entry(pos.currency.clone()).or_default() += pos.amount;
+            }
+
+            if let Some(converted_positions) = &row.converted_positions {
+                let converted_entry = converted_totals.entry(account).or_default();
+                for pos in converted_positions {
+                    *converted_entry.entry(pos.currency.clone()).or_default() += pos.amount;
+                }
             }
         }
     }
@@ -269,12 +296,15 @@ fn apply_hierarchy(rows: Vec<BalanceRow>) -> Vec<BalanceRow> {
     totals
         .into_iter()
         .map(|(account, currencies)| {
-            let mut positions: Vec<Position> = currencies
-                .into_iter()
-                .map(|(currency, amount)| Position { currency, amount })
-                .collect();
-            positions.sort_by(|a, b| a.currency.cmp(&b.currency));
-            BalanceRow { account, positions }
+            let positions = positions_from_currency_map(currencies);
+            let converted_positions = converted_totals
+                .remove(&account)
+                .map(positions_from_currency_map);
+            BalanceRow {
+                account,
+                positions,
+                converted_positions,
+            }
         })
         .collect()
 }
@@ -282,6 +312,7 @@ fn apply_hierarchy(rows: Vec<BalanceRow>) -> Vec<BalanceRow> {
 /// Collapse leaf accounts deeper than `depth` into their `depth`-level ancestor.
 fn apply_depth_collapse(rows: Vec<BalanceRow>, depth: u32) -> Vec<BalanceRow> {
     let mut collapsed: BTreeMap<String, HashMap<String, Decimal>> = BTreeMap::new();
+    let mut collapsed_converted: BTreeMap<String, HashMap<String, Decimal>> = BTreeMap::new();
 
     for row in &rows {
         let parts: Vec<&str> = row.account.split(':').collect();
@@ -295,19 +326,39 @@ fn apply_depth_collapse(rows: Vec<BalanceRow>, depth: u32) -> Vec<BalanceRow> {
         for pos in &row.positions {
             *entry.entry(pos.currency.clone()).or_default() += pos.amount;
         }
+
+        if let Some(converted_positions) = &row.converted_positions {
+            let converted_entry = collapsed_converted.entry(row.account.split(':').collect::<Vec<_>>().into_iter().take(depth as usize).collect::<Vec<_>>().join(":"));
+            let converted_entry = converted_entry.or_default();
+            for pos in converted_positions {
+                *converted_entry.entry(pos.currency.clone()).or_default() += pos.amount;
+            }
+        }
     }
 
     collapsed
         .into_iter()
         .map(|(account, currencies)| {
-            let mut positions: Vec<Position> = currencies
-                .into_iter()
-                .map(|(currency, amount)| Position { currency, amount })
-                .collect();
-            positions.sort_by(|a, b| a.currency.cmp(&b.currency));
-            BalanceRow { account, positions }
+            let positions = positions_from_currency_map(currencies);
+            let converted_positions = collapsed_converted
+                .remove(&account)
+                .map(positions_from_currency_map);
+            BalanceRow {
+                account,
+                positions,
+                converted_positions,
+            }
         })
         .collect()
+}
+
+fn positions_from_currency_map(currencies: HashMap<String, Decimal>) -> Vec<Position> {
+    let mut positions: Vec<Position> = currencies
+        .into_iter()
+        .map(|(currency, amount)| Position { currency, amount })
+        .collect();
+    positions.sort_by(|a, b| a.currency.cmp(&b.currency));
+    positions
 }
 
 // ---------------------------------------------------------------------------
@@ -319,7 +370,7 @@ fn compute_grand_total(
     rows: &[BalanceRow],
     hierarchy: bool,
     depth: Option<u32>,
-) -> Option<Vec<Position>> {
+) -> Option<BalanceTotals> {
     if rows.is_empty() {
         return None;
     }
@@ -335,6 +386,7 @@ fn compute_grand_total(
     };
 
     let mut totals: HashMap<String, Decimal> = HashMap::new();
+    let mut converted_totals: HashMap<String, Decimal> = HashMap::new();
     for row in rows {
         let include = if hierarchy {
             row.account.matches(':').count() + 1 == root_depth
@@ -349,6 +401,11 @@ fn compute_grand_total(
             for pos in &row.positions {
                 *totals.entry(pos.currency.clone()).or_default() += pos.amount;
             }
+            if let Some(converted_positions) = &row.converted_positions {
+                for pos in converted_positions {
+                    *converted_totals.entry(pos.currency.clone()).or_default() += pos.amount;
+                }
+            }
         }
     }
 
@@ -356,12 +413,14 @@ fn compute_grand_total(
         return None;
     }
 
-    let mut positions: Vec<Position> = totals
-        .into_iter()
-        .map(|(currency, amount)| Position { currency, amount })
-        .collect();
-    positions.sort_by(|a, b| a.currency.cmp(&b.currency));
-    Some(positions)
+    Some(BalanceTotals {
+        positions: positions_from_currency_map(totals),
+        converted_positions: if converted_totals.is_empty() {
+            None
+        } else {
+            Some(positions_from_currency_map(converted_totals))
+        },
+    })
 }
 
 // ---------------------------------------------------------------------------
@@ -401,30 +460,55 @@ fn format_amount(amount: Decimal, currency: &str) -> String {
     format!("{sign}{with_commas}.{frac_part} {currency}")
 }
 
-fn print_table(rows: &[BalanceRow], grand_total: Option<&[Position]>) {
+fn print_table(rows: &[BalanceRow], grand_total: Option<&BalanceTotals>, exchange: Option<&str>) {
     let mut table = Table::new();
     table.load_preset(presets::UTF8_FULL_CONDENSED);
-    table.set_header(vec![
+    let mut headers = vec![
         Cell::new("Account").set_alignment(CellAlignment::Left),
         Cell::new("Balance").set_alignment(CellAlignment::Right),
-    ]);
+    ];
+    if let Some(currency) = exchange {
+        headers.push(Cell::new(format!("Total ({currency})")).set_alignment(CellAlignment::Right));
+    }
+    table.set_header(headers);
 
     for row in rows {
-        table.add_row(vec![
+        let mut cells = vec![
             Cell::new(&row.account).set_alignment(CellAlignment::Left),
             Cell::new(format_positions(&row.positions)).set_alignment(CellAlignment::Right),
-        ]);
+        ];
+        if exchange.is_some() {
+            cells.push(
+                Cell::new(format_positions(row.converted_positions.as_deref().unwrap_or(&[])))
+                    .set_alignment(CellAlignment::Right),
+            );
+        }
+        table.add_row(cells);
     }
 
     if let Some(total_positions) = grand_total {
-        table.add_row(vec![
+        let mut separator = vec![
             Cell::new("-------------------").set_alignment(CellAlignment::Left),
             Cell::new("-------------------").set_alignment(CellAlignment::Right),
-        ]);
-        table.add_row(vec![
+        ];
+        if exchange.is_some() {
+            separator.push(Cell::new("-------------------").set_alignment(CellAlignment::Right));
+        }
+        table.add_row(separator);
+
+        let mut total_row = vec![
             Cell::new("Total").set_alignment(CellAlignment::Left),
-            Cell::new(format_positions(total_positions)).set_alignment(CellAlignment::Right),
-        ]);
+            Cell::new(format_positions(&total_positions.positions)).set_alignment(CellAlignment::Right),
+        ];
+        if exchange.is_some() {
+            total_row.push(
+                Cell::new(format_positions(
+                    total_positions.converted_positions.as_deref().unwrap_or(&[]),
+                ))
+                .set_alignment(CellAlignment::Right),
+            );
+        }
+        table.add_row(total_row);
     }
 
     println!("{table}");
@@ -554,10 +638,12 @@ mod tests {
             BalanceRow {
                 account: "Assets:Bank:Checking".to_string(),
                 positions: vec![Position { currency: "EUR".to_string(), amount: "1000".parse().unwrap() }],
+                converted_positions: None,
             },
             BalanceRow {
                 account: "Assets:Bank:Savings".to_string(),
                 positions: vec![Position { currency: "EUR".to_string(), amount: "500".parse().unwrap() }],
+                converted_positions: None,
             },
         ];
         let result = apply_hierarchy(rows);
@@ -581,14 +667,17 @@ mod tests {
             BalanceRow {
                 account: "Assets:Bank:Checking".to_string(),
                 positions: vec![Position { currency: "EUR".to_string(), amount: "1000".parse().unwrap() }],
+                converted_positions: None,
             },
             BalanceRow {
                 account: "Assets:Bank:Savings".to_string(),
                 positions: vec![Position { currency: "EUR".to_string(), amount: "500".parse().unwrap() }],
+                converted_positions: None,
             },
             BalanceRow {
                 account: "Expenses:Food".to_string(),
                 positions: vec![Position { currency: "EUR".to_string(), amount: "100".parse().unwrap() }],
+                converted_positions: None,
             },
         ];
         let result = apply_depth_collapse(rows, 1);

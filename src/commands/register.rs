@@ -13,6 +13,12 @@ use crate::{
 };
 
 #[derive(Debug, Clone)]
+struct Position {
+    currency: String,
+    amount: Decimal,
+}
+
+#[derive(Debug, Clone)]
 struct RegisterRow {
     date: String,
     account: String,
@@ -20,24 +26,17 @@ struct RegisterRow {
     narration: String,
     amount: Decimal,
     currency: String,
+    converted_amount: Option<Position>,
 }
 
 /// Transaction register command
 pub fn run(opts: CommonOptions) -> Result<(), Box<dyn std::error::Error>> {
-    if opts.exchange.is_some() {
-        return Err(
-            "The --exchange / -X option is not yet supported in the register command.\n\
-             It requires rledger to support the convert() function."
-                .into(),
-        );
-    }
-
     let config = Config::load(opts.ledger.clone())?;
     let query = build_query(&opts);
     let rows = run_bql_query(&config, &query)?;
     let register_rows = parse_rows(&rows)?;
 
-    print_table(&register_rows, opts.total);
+    print_table(&register_rows, opts.total, opts.exchange.as_deref());
     Ok(())
 }
 
@@ -107,7 +106,13 @@ fn build_query(opts: &CommonOptions) -> String {
         }
     }
 
-    let mut query = "SELECT date, account, payee, narration, position".to_string();
+    let mut query = if let Some(exchange) = &opts.exchange {
+        format!(
+            "SELECT date, account, payee, narration, position, convert(position, '{exchange}') as Converted"
+        )
+    } else {
+        "SELECT date, account, payee, narration, position".to_string()
+    };
     if !where_clauses.is_empty() {
         query.push_str(&format!(" WHERE {}", where_clauses.join(" AND ")));
     }
@@ -164,6 +169,8 @@ fn parse_rows(json_rows: &[Value]) -> Result<Vec<RegisterRow>, Box<dyn std::erro
             .parse::<Decimal>()
             .map_err(|_| format!("invalid decimal: {number_str}"))?;
 
+        let converted_amount = row.get("Converted").map(parse_position).transpose()?;
+
         rows.push(RegisterRow {
             date,
             account,
@@ -171,9 +178,25 @@ fn parse_rows(json_rows: &[Value]) -> Result<Vec<RegisterRow>, Box<dyn std::erro
             narration,
             amount,
             currency,
+            converted_amount,
         });
     }
     Ok(rows)
+}
+
+fn parse_position(value: &Value) -> Result<Position, Box<dyn std::error::Error>> {
+    let currency = value["currency"]
+        .as_str()
+        .ok_or("missing currency in converted position")?
+        .to_string();
+    let number_str = value["number"]
+        .as_str()
+        .ok_or("missing number in converted position")?;
+    let amount = number_str
+        .parse::<Decimal>()
+        .map_err(|_| format!("invalid decimal: {number_str}"))?;
+
+    Ok(Position { currency, amount })
 }
 
 // ---------------------------------------------------------------------------
@@ -212,7 +235,7 @@ fn format_running_totals(totals: &HashMap<String, Decimal>) -> String {
     parts.join(" ")
 }
 
-fn print_table(rows: &[RegisterRow], show_total: bool) {
+fn print_table(rows: &[RegisterRow], show_total: bool, exchange: Option<&str>) {
     let mut table = Table::new();
     table.load_preset(presets::UTF8_FULL_CONDENSED);
 
@@ -226,12 +249,22 @@ fn print_table(rows: &[RegisterRow], show_total: bool) {
     if show_total {
         headers.push(Cell::new("Running Total").set_alignment(CellAlignment::Right));
     }
+    if let Some(currency) = exchange {
+        headers.push(Cell::new(format!("Amount ({currency})")).set_alignment(CellAlignment::Right));
+        if show_total {
+            headers.push(Cell::new(format!("Total ({currency})")).set_alignment(CellAlignment::Right));
+        }
+    }
     table.set_header(headers);
 
     let mut running_totals: HashMap<String, Decimal> = HashMap::new();
+    let mut converted_running_total = Decimal::ZERO;
 
     for row in rows {
         *running_totals.entry(row.currency.clone()).or_default() += row.amount;
+        if let Some(converted_amount) = &row.converted_amount {
+            converted_running_total += converted_amount.amount;
+        }
 
         let mut cells = vec![
             Cell::new(&row.date).set_alignment(CellAlignment::Left),
@@ -246,6 +279,20 @@ fn print_table(rows: &[RegisterRow], show_total: bool) {
                 Cell::new(format_running_totals(&running_totals))
                     .set_alignment(CellAlignment::Right),
             );
+        }
+        if let Some(currency) = exchange {
+            let converted_value = row
+                .converted_amount
+                .as_ref()
+                .map(|position| format_amount(position.amount, &position.currency))
+                .unwrap_or_default();
+            cells.push(Cell::new(converted_value).set_alignment(CellAlignment::Right));
+            if show_total {
+                cells.push(
+                    Cell::new(format_amount(converted_running_total, currency))
+                        .set_alignment(CellAlignment::Right),
+                );
+            }
         }
         table.add_row(cells);
     }
