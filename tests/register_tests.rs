@@ -57,12 +57,24 @@ fn reg_shows_expected_columns() {
     let (stdout, _stderr, code) = run_reg(&[]);
     assert_eq!(code, 0);
     assert!(stdout.contains("Date"), "should have Date column header");
-    assert!(stdout.contains("Account"), "should have Account column header");
+    assert!(
+        stdout.contains("Account"),
+        "should have Account column header"
+    );
     assert!(stdout.contains("Payee"), "should have Payee column header");
-    assert!(stdout.contains("Narration"), "should have Narration column header");
-    assert!(stdout.contains("Amount"), "should have Amount column header");
+    assert!(
+        stdout.contains("Narration"),
+        "should have Narration column header"
+    );
+    assert!(
+        stdout.contains("Amount"),
+        "should have Amount column header"
+    );
     // Running Total should NOT appear without --total
-    assert!(!stdout.contains("Running Total"), "Running Total should be absent without -T");
+    assert!(
+        !stdout.contains("Running Total"),
+        "Running Total should be absent without -T"
+    );
 }
 
 // ---------------------------------------------------------------------------
@@ -78,7 +90,10 @@ fn reg_filter_by_account() {
     assert!(stdout.contains("Groceries"));
     assert!(stdout.contains("Expenses:Food"));
     assert!(stdout.contains("100.00 EUR"));
-    assert!(!stdout.contains("Ice Cream"), "Ice Cream should be excluded");
+    assert!(
+        !stdout.contains("Ice Cream"),
+        "Ice Cream should be excluded"
+    );
 }
 
 #[test]
@@ -87,7 +102,10 @@ fn reg_filter_by_payee() {
     assert_eq!(code, 0);
     assert!(stdout.contains("Grocery Store"));
     assert!(stdout.contains("Groceries"));
-    assert!(!stdout.contains("Ice Cream"), "Ice Cream should be excluded");
+    assert!(
+        !stdout.contains("Ice Cream"),
+        "Ice Cream should be excluded"
+    );
 }
 
 #[test]
@@ -95,7 +113,10 @@ fn reg_filter_excludes_with_not() {
     let (stdout, _stderr, code) = run_reg(&["Assets", "not", "Bank"]);
     assert_eq!(code, 0);
     assert!(stdout.contains("Assets:Cash:"));
-    assert!(!stdout.contains("Assets:Bank:"), "Bank accounts should be excluded");
+    assert!(
+        !stdout.contains("Assets:Bank:"),
+        "Bank accounts should be excluded"
+    );
 }
 
 #[test]
@@ -106,7 +127,10 @@ fn reg_multiple_account_patterns() {
     assert!(stdout.contains("Ice Cream Shop"));
     assert!(stdout.contains("Ice Cream"));
     assert!(stdout.contains("Expenses:Sweets"));
-    assert!(!stdout.contains("Grocery Store"), "Grocery Store should be excluded");
+    assert!(
+        !stdout.contains("Grocery Store"),
+        "Grocery Store should be excluded"
+    );
 }
 
 // ---------------------------------------------------------------------------
@@ -118,9 +142,15 @@ fn reg_begin_date_filter() {
     let (stdout, _stderr, code) = run_reg(&["--begin", "2025-04"]);
     assert_eq!(code, 0);
     // Ice Cream is 2025-02-01, should be excluded
-    assert!(!stdout.contains("Ice Cream"), "Ice Cream should be excluded");
+    assert!(
+        !stdout.contains("Ice Cream"),
+        "Ice Cream should be excluded"
+    );
     // Stock purchase is 2025-04-01, should be included
-    assert!(stdout.contains("Buy Stocks"), "Buy Stocks should be included");
+    assert!(
+        stdout.contains("Buy Stocks"),
+        "Buy Stocks should be included"
+    );
 }
 
 #[test]
@@ -131,7 +161,10 @@ fn reg_end_date_filter() {
     assert!(stdout.contains("Initial Balance"));
     assert!(stdout.contains("Ice Cream"));
     // Grocery Store (2025-03-01) should be excluded (date < end)
-    assert!(!stdout.contains("Groceries"), "Groceries should be excluded");
+    assert!(
+        !stdout.contains("Groceries"),
+        "Groceries should be excluded"
+    );
 }
 
 #[test]
@@ -141,7 +174,10 @@ fn reg_date_range_month() {
     // August 2025 transactions: Transfer to savings (08-01), Holiday Bus (08-15), Holiday Train (08-16)
     assert!(stdout.contains("Transfer to savings"));
     assert!(stdout.contains("Bus"));
-    assert!(!stdout.contains("Ice Cream"), "Ice Cream should be excluded");
+    assert!(
+        !stdout.contains("Ice Cream"),
+        "Ice Cream should be excluded"
+    );
 }
 
 // ---------------------------------------------------------------------------
@@ -153,7 +189,10 @@ fn reg_filter_by_currency() {
     let (stdout, _stderr, code) = run_reg(&["--currency", "EUR"]);
     assert_eq!(code, 0);
     // CHF (3000 CHF) transaction should be excluded
-    assert!(!stdout.contains("3,000.00 CHF"), "CHF transaction should be excluded");
+    assert!(
+        !stdout.contains("3,000.00 CHF"),
+        "CHF transaction should be excluded"
+    );
     // EUR transactions should be present
     assert!(stdout.contains("EUR"));
 }
@@ -164,7 +203,10 @@ fn reg_filter_by_currency_usd() {
     assert_eq!(code, 0);
     assert!(stdout.contains("7.00 USD"));
     assert!(stdout.contains("Metro"));
-    assert!(!stdout.contains("EUR"), "EUR transactions should be excluded");
+    assert!(
+        !stdout.contains("EUR"),
+        "EUR transactions should be excluded"
+    );
 }
 
 // ---------------------------------------------------------------------------
@@ -196,8 +238,14 @@ fn reg_filter_amount_gt_with_currency() {
 fn reg_total_flag_shows_running_total() {
     let (stdout, _stderr, code) = run_reg(&["--total"]);
     assert_eq!(code, 0);
-    assert!(stdout.contains("Running Total"), "Running Total column should appear");
-    assert!(stdout.contains("1,000.00 EUR"), "1000 EUR running total should appear");
+    assert!(
+        stdout.contains("Running Total"),
+        "Running Total column should appear"
+    );
+    assert!(
+        stdout.contains("1,000.00 EUR"),
+        "1000 EUR running total should appear"
+    );
 }
 
 #[test]
@@ -226,7 +274,10 @@ fn reg_sort_by_date_asc() {
     assert_eq!(code, 0);
     let ice_cream_pos = stdout.find("Ice Cream").unwrap_or(usize::MAX);
     let grocery_pos = stdout.find("Groceries").unwrap_or(usize::MAX);
-    assert!(ice_cream_pos < grocery_pos, "Ice Cream (2025-02) should appear before Groceries (2025-03)");
+    assert!(
+        ice_cream_pos < grocery_pos,
+        "Ice Cream (2025-02) should appear before Groceries (2025-03)"
+    );
 }
 
 #[test]
@@ -235,7 +286,10 @@ fn reg_sort_by_date_desc() {
     assert_eq!(code, 0);
     let ice_cream_pos = stdout.find("Ice Cream").unwrap_or(usize::MAX);
     let grocery_pos = stdout.find("Groceries").unwrap_or(usize::MAX);
-    assert!(grocery_pos < ice_cream_pos, "Groceries (2025-03) should appear before Ice Cream (2025-02) in DESC order");
+    assert!(
+        grocery_pos < ice_cream_pos,
+        "Groceries (2025-03) should appear before Ice Cream (2025-02) in DESC order"
+    );
 }
 
 // ---------------------------------------------------------------------------
@@ -251,5 +305,9 @@ fn reg_limit_restricts_rows() {
         .lines()
         .filter(|l| l.contains('│') && !l.contains("Date") && !l.contains("Account"))
         .collect();
-    assert!(data_rows.len() <= 2, "Should have at most 2 data rows, got {}", data_rows.len());
+    assert!(
+        data_rows.len() <= 2,
+        "Should have at most 2 data rows, got {}",
+        data_rows.len()
+    );
 }

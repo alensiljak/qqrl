@@ -164,7 +164,9 @@ fn parse_rows(json_rows: &[Value]) -> Result<Vec<RegisterRow>, Box<dyn std::erro
             .as_str()
             .ok_or("missing currency in position")?
             .to_string();
-        let number_str = units["number"].as_str().ok_or("missing number in position")?;
+        let number_str = units["number"]
+            .as_str()
+            .ok_or("missing number in position")?;
         let amount = number_str
             .parse::<Decimal>()
             .map_err(|_| format!("invalid decimal: {number_str}"))?;
@@ -252,7 +254,8 @@ fn print_table(rows: &[RegisterRow], show_total: bool, exchange: Option<&str>) {
     if let Some(currency) = exchange {
         headers.push(Cell::new(format!("Amount ({currency})")).set_alignment(CellAlignment::Right));
         if show_total {
-            headers.push(Cell::new(format!("Total ({currency})")).set_alignment(CellAlignment::Right));
+            headers
+                .push(Cell::new(format!("Total ({currency})")).set_alignment(CellAlignment::Right));
         }
     }
     table.set_header(headers);
@@ -271,8 +274,7 @@ fn print_table(rows: &[RegisterRow], show_total: bool, exchange: Option<&str>) {
             Cell::new(&row.account).set_alignment(CellAlignment::Left),
             Cell::new(&row.payee).set_alignment(CellAlignment::Left),
             Cell::new(&row.narration).set_alignment(CellAlignment::Left),
-            Cell::new(format_amount(row.amount, &row.currency))
-                .set_alignment(CellAlignment::Right),
+            Cell::new(format_amount(row.amount, &row.currency)).set_alignment(CellAlignment::Right),
         ];
         if show_total {
             cells.push(

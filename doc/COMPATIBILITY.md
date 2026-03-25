@@ -56,7 +56,7 @@ diff e.norm.txt a.norm.txt
 | `--amount` (multiple) | `-a`  | ✓          | ☐    | `-a >10 -a <200`             |
 | `--currency CURR`     | `-c`  | ✓          | ☐    | `-c EUR`                     |
 | `--currency (multi)`  | `-c`  | ✓          | ☐    | `-c EUR,BAM`                 |
-| `--exchange CURR`     | `-X`  | ✓          | ☐    | `-X EUR` ⚠️ Phase 0 risk      |
+| `--exchange CURR`     | `-X`  | ✓          | ✓    | `-X EUR`                      |
 | `--total`             | `-T`  | ✓          | ☐    |                              |
 | `--no-pager`          | —     | ✓          | ☐    |                              |
 
@@ -126,7 +126,7 @@ ledger2bql bal -H -D 2
 ledger2bql bal -H -T
 ledger2bql bal -S -account
 ledger2bql bal --limit 3
-ledger2bql bal -X EUR        # ⚠️ requires convert() — Phase 0 risk
+ledger2bql bal -X EUR
 ```
 
 | Feature                   | ledger2bql | qqrl | Notes                                  |
@@ -145,7 +145,7 @@ ledger2bql bal -X EUR        # ⚠️ requires convert() — Phase 0 risk
 | `--hierarchy` / `-H`      | ✓          | ✓    | Parent account aggregation             |
 | `--sort` / `-S`           | ✓          | ✓    |                                        |
 | `--limit`                 | ✓          | ✓    |                                        |
-| `--exchange` / `-X`       | ✓          | ☐    | ⚠️ `convert()` not in rledger           |
+| `--exchange` / `-X`       | ✓          | ✓    | Uses `sum(convert(position, CURR))`     |
 | `--no-pager`              | ✓          | ☐    |                                        |
 
 ---
@@ -168,7 +168,7 @@ ledger2bql reg -T
 ledger2bql reg -S date
 ledger2bql reg -S -date
 ledger2bql reg --limit 5
-ledger2bql reg -X EUR        # ⚠️ Phase 0 risk
+ledger2bql reg -X EUR
 ```
 
 | Feature                        | ledger2bql | qqrl | Notes                                   |
@@ -184,7 +184,7 @@ ledger2bql reg -X EUR        # ⚠️ Phase 0 risk
 | `--total` / `-T`               | ✓          | ✓    | Running total column                    |
 | `--sort` / `-S`                | ✓          | ✓    |                                         |
 | `--limit`                      | ✓          | ✓    |                                         |
-| `--exchange` / `-X`            | ✓          | ☐    | ⚠️ Phase 0                               |
+| `--exchange` / `-X`            | ✓          | ✓    | Uses `convert(position, CURR)`           |
 | Multi-currency running totals  | ✓          | ✓    | Tracks each currency separately         |
 | `--no-pager`                   | ✓          | ☐    |                                         |
 
@@ -303,7 +303,8 @@ rledger query -f json tests/sample-ledger.bean "QUERY"
 
 | Feature                    | Used in                        | BQL query to test                                                   | Status |
 |----------------------------|--------------------------------|---------------------------------------------------------------------|--------|
-| `convert(position, 'EUR')` | `bal`, `reg` with `--exchange` | `SELECT account, sum(convert(position, 'EUR')) GROUP BY account`    | ☐      |
+| `convert(position, 'EUR')` | `bal`, `reg` with `--exchange` | `SELECT account, sum(convert(position, 'EUR')) GROUP BY account`    | ✓      |
+| `convert(sum(position), 'EUR')` | direct aggregate conversion | `SELECT account, convert(sum(position), 'EUR') GROUP BY account` | ☐ |
 | `value(position)`          | `lots`                         | `SELECT account, value(SUM(position)) GROUP BY account`             | ☐      |
 | `cost_number`              | `lots`                         | `SELECT account, cost_number WHERE cost_number IS NOT NULL LIMIT 5` | ☐      |
 | `#balances` system table   | `assert`                       | `SELECT date, account, amount FROM #balances`                       | ☐      |

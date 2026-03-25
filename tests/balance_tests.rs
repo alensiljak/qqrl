@@ -46,7 +46,10 @@ fn run_bal(args: &[&str]) -> (String, String, i32) {
 fn bal_no_args_exits_ok() {
     let (stdout, _stderr, code) = run_bal(&[]);
     assert_eq!(code, 0, "exit code should be 0");
-    assert!(stdout.contains("Assets:Bank:Checking"), "should list Checking");
+    assert!(
+        stdout.contains("Assets:Bank:Checking"),
+        "should list Checking"
+    );
     assert!(stdout.contains("Expenses:Sweets"), "should list Sweets");
     assert!(stdout.contains("1,369.80 EUR") || stdout.contains("1369.80 EUR"));
 }
@@ -104,8 +107,7 @@ fn bal_begin_date_filter() {
 
 #[test]
 fn bal_end_date_filter() {
-    let (stdout, _stderr, code) =
-        run_bal(&["--end", "2025-04-01", "Assets:Bank:Checking"]);
+    let (stdout, _stderr, code) = run_bal(&["--end", "2025-04-01", "Assets:Bank:Checking"]);
     assert_eq!(code, 0);
     assert!(stdout.contains("Assets:Bank:Checking"));
 }
@@ -145,7 +147,11 @@ fn bal_limit() {
         .lines()
         .filter(|l| l.contains("| ") && !l.contains("Account") && !l.contains("---"))
         .collect();
-    assert!(data_rows.len() <= 3, "Expected <= 3 rows, got {}", data_rows.len());
+    assert!(
+        data_rows.len() <= 3,
+        "Expected <= 3 rows, got {}",
+        data_rows.len()
+    );
 }
 
 // ---------------------------------------------------------------------------
@@ -170,10 +176,19 @@ fn bal_hierarchy_includes_parents() {
     assert_eq!(code, 0);
     assert!(stdout.contains("Assets"), "should contain top-level Assets");
     assert!(stdout.contains("Assets:Bank"), "should contain Assets:Bank");
-    assert!(stdout.contains("Assets:Bank:Checking"), "should contain leaf");
+    assert!(
+        stdout.contains("Assets:Bank:Checking"),
+        "should contain leaf"
+    );
     assert!(stdout.contains("Expenses"), "should contain Expenses");
-    assert!(stdout.contains("Expenses:Transport"), "should contain Expenses:Transport");
-    assert!(stdout.contains("Expenses:Transport:Bus"), "should contain Bus leaf");
+    assert!(
+        stdout.contains("Expenses:Transport"),
+        "should contain Expenses:Transport"
+    );
+    assert!(
+        stdout.contains("Expenses:Transport:Bus"),
+        "should contain Bus leaf"
+    );
 }
 
 #[test]
@@ -194,7 +209,10 @@ fn bal_hierarchy_with_filter() {
     assert_eq!(code, 0);
     assert!(stdout.contains("Assets:Bank"));
     assert!(!stdout.contains("Equity"), "non-Assets should be excluded");
-    assert!(!stdout.contains("Expenses"), "non-Assets should be excluded");
+    assert!(
+        !stdout.contains("Expenses"),
+        "non-Assets should be excluded"
+    );
 }
 
 // ---------------------------------------------------------------------------
@@ -215,7 +233,10 @@ fn bal_depth_2_collapses() {
         "depth 2 should collapse Assets:Bank:Savings into Assets:Bank"
     );
     // But Assets:Bank itself should appear
-    assert!(stdout.contains("Assets:Bank"), "Assets:Bank should appear at depth 2");
+    assert!(
+        stdout.contains("Assets:Bank"),
+        "Assets:Bank should appear at depth 2"
+    );
 }
 
 #[test]
@@ -223,9 +244,18 @@ fn bal_depth_1_collapses_to_top() {
     let (stdout, _stderr, code) = run_bal(&["--depth", "1"]);
     assert_eq!(code, 0);
     assert!(stdout.contains("Assets"), "Assets top-level should appear");
-    assert!(!stdout.contains("Assets:"), "sub-accounts should be collapsed");
-    assert!(stdout.contains("Expenses"), "Expenses top-level should appear");
-    assert!(!stdout.contains("Expenses:"), "Expenses sub-accounts should be collapsed");
+    assert!(
+        !stdout.contains("Assets:"),
+        "sub-accounts should be collapsed"
+    );
+    assert!(
+        stdout.contains("Expenses"),
+        "Expenses top-level should appear"
+    );
+    assert!(
+        !stdout.contains("Expenses:"),
+        "Expenses sub-accounts should be collapsed"
+    );
 }
 
 // ---------------------------------------------------------------------------
@@ -251,7 +281,10 @@ fn bal_sort_desc_account() {
     // In descending order Income comes before Expenses before Equity before Assets
     let income_pos = stdout.find("Income:").unwrap_or(usize::MAX);
     let assets_pos = stdout.find("Assets:").unwrap_or(usize::MAX);
-    assert!(income_pos < assets_pos, "Income should appear before Assets in DESC order");
+    assert!(
+        income_pos < assets_pos,
+        "Income should appear before Assets in DESC order"
+    );
 }
 
 // ---------------------------------------------------------------------------

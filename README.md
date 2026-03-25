@@ -10,6 +10,10 @@ Quick Query for Rust Ledger
 
 For the moment, the app can only be installed by building from the source, as it is in in a very early stage of development.
 
+```sh
+cargo install --path .
+```
+
 ## Development
 
 Run tests:

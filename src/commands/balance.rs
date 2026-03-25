@@ -62,8 +62,7 @@ pub fn run(opts: CommonOptions) -> Result<(), Box<dyn std::error::Error>> {
     // Exclude zero-balance accounts
     if opts.zero {
         balance_rows.retain(|r| {
-            !r.positions.is_empty()
-                && r.positions.iter().any(|p| p.amount != Decimal::ZERO)
+            !r.positions.is_empty() && r.positions.iter().any(|p| p.amount != Decimal::ZERO)
         });
     }
 
@@ -74,7 +73,11 @@ pub fn run(opts: CommonOptions) -> Result<(), Box<dyn std::error::Error>> {
         None
     };
 
-    print_table(&balance_rows, grand_total.as_ref(), opts.exchange.as_deref());
+    print_table(
+        &balance_rows,
+        grand_total.as_ref(),
+        opts.exchange.as_deref(),
+    );
     Ok(())
 }
 
@@ -328,7 +331,15 @@ fn apply_depth_collapse(rows: Vec<BalanceRow>, depth: u32) -> Vec<BalanceRow> {
         }
 
         if let Some(converted_positions) = &row.converted_positions {
-            let converted_entry = collapsed_converted.entry(row.account.split(':').collect::<Vec<_>>().into_iter().take(depth as usize).collect::<Vec<_>>().join(":"));
+            let converted_entry = collapsed_converted.entry(
+                row.account
+                    .split(':')
+                    .collect::<Vec<_>>()
+                    .into_iter()
+                    .take(depth as usize)
+                    .collect::<Vec<_>>()
+                    .join(":"),
+            );
             let converted_entry = converted_entry.or_default();
             for pos in converted_positions {
                 *converted_entry.entry(pos.currency.clone()).or_default() += pos.amount;
@@ -479,8 +490,10 @@ fn print_table(rows: &[BalanceRow], grand_total: Option<&BalanceTotals>, exchang
         ];
         if exchange.is_some() {
             cells.push(
-                Cell::new(format_positions(row.converted_positions.as_deref().unwrap_or(&[])))
-                    .set_alignment(CellAlignment::Right),
+                Cell::new(format_positions(
+                    row.converted_positions.as_deref().unwrap_or(&[]),
+                ))
+                .set_alignment(CellAlignment::Right),
             );
         }
         table.add_row(cells);
@@ -498,12 +511,16 @@ fn print_table(rows: &[BalanceRow], grand_total: Option<&BalanceTotals>, exchang
 
         let mut total_row = vec![
             Cell::new("Total").set_alignment(CellAlignment::Left),
-            Cell::new(format_positions(&total_positions.positions)).set_alignment(CellAlignment::Right),
+            Cell::new(format_positions(&total_positions.positions))
+                .set_alignment(CellAlignment::Right),
         ];
         if exchange.is_some() {
             total_row.push(
                 Cell::new(format_positions(
-                    total_positions.converted_positions.as_deref().unwrap_or(&[]),
+                    total_positions
+                        .converted_positions
+                        .as_deref()
+                        .unwrap_or(&[]),
                 ))
                 .set_alignment(CellAlignment::Right),
             );
@@ -524,11 +541,20 @@ mod tests {
 
     #[test]
     fn format_amount_basic() {
-        assert_eq!(format_amount("1369.80".parse().unwrap(), "EUR"), "1,369.80 EUR");
+        assert_eq!(
+            format_amount("1369.80".parse().unwrap(), "EUR"),
+            "1,369.80 EUR"
+        );
         assert_eq!(format_amount("20".parse().unwrap(), "EUR"), "20.00 EUR");
-        assert_eq!(format_amount("-1000".parse().unwrap(), "EUR"), "-1,000.00 EUR");
+        assert_eq!(
+            format_amount("-1000".parse().unwrap(), "EUR"),
+            "-1,000.00 EUR"
+        );
         assert_eq!(format_amount("-7".parse().unwrap(), "USD"), "-7.00 USD");
-        assert_eq!(format_amount("1234567.89".parse().unwrap(), "CHF"), "1,234,567.89 CHF");
+        assert_eq!(
+            format_amount("1234567.89".parse().unwrap(), "CHF"),
+            "1,234,567.89 CHF"
+        );
     }
 
     #[test]
@@ -609,6 +635,33 @@ mod tests {
     }
 
     #[test]
+    fn build_query_with_exchange_uses_sum_of_converted_positions() {
+        let opts = CommonOptions {
+            account: vec!["Assets:Bank:Bank03581".to_string()],
+            begin: None,
+            end: None,
+            date_range: None,
+            amount: vec![],
+            currency: vec![],
+            exchange: Some("EUR".to_string()),
+            sort: None,
+            limit: None,
+            total: false,
+            no_pager: false,
+            hierarchy: false,
+            empty: false,
+            depth: None,
+            zero: false,
+            ledger: None,
+        };
+
+        let q = build_query(&opts);
+
+        assert!(q.contains("sum(convert(position, 'EUR')) as Converted"));
+        assert!(!q.contains("convert(sum(position), 'EUR')"));
+    }
+
+    #[test]
     fn build_query_sort_desc() {
         let opts = CommonOptions {
             account: vec![],
@@ -637,12 +690,18 @@ mod tests {
         let rows = vec![
             BalanceRow {
                 account: "Assets:Bank:Checking".to_string(),
-                positions: vec![Position { currency: "EUR".to_string(), amount: "1000".parse().unwrap() }],
+                positions: vec![Position {
+                    currency: "EUR".to_string(),
+                    amount: "1000".parse().unwrap(),
+                }],
                 converted_positions: None,
             },
             BalanceRow {
                 account: "Assets:Bank:Savings".to_string(),
-                positions: vec![Position { currency: "EUR".to_string(), amount: "500".parse().unwrap() }],
+                positions: vec![Position {
+                    currency: "EUR".to_string(),
+                    amount: "500".parse().unwrap(),
+                }],
                 converted_positions: None,
             },
         ];
@@ -655,7 +714,10 @@ mod tests {
         assert!(accounts.contains(&"Assets:Bank:Savings"));
 
         let assets = result.iter().find(|r| r.account == "Assets").unwrap();
-        assert_eq!(assets.positions[0].amount, "1500".parse::<Decimal>().unwrap());
+        assert_eq!(
+            assets.positions[0].amount,
+            "1500".parse::<Decimal>().unwrap()
+        );
 
         let bank = result.iter().find(|r| r.account == "Assets:Bank").unwrap();
         assert_eq!(bank.positions[0].amount, "1500".parse::<Decimal>().unwrap());
@@ -666,17 +728,26 @@ mod tests {
         let rows = vec![
             BalanceRow {
                 account: "Assets:Bank:Checking".to_string(),
-                positions: vec![Position { currency: "EUR".to_string(), amount: "1000".parse().unwrap() }],
+                positions: vec![Position {
+                    currency: "EUR".to_string(),
+                    amount: "1000".parse().unwrap(),
+                }],
                 converted_positions: None,
             },
             BalanceRow {
                 account: "Assets:Bank:Savings".to_string(),
-                positions: vec![Position { currency: "EUR".to_string(), amount: "500".parse().unwrap() }],
+                positions: vec![Position {
+                    currency: "EUR".to_string(),
+                    amount: "500".parse().unwrap(),
+                }],
                 converted_positions: None,
             },
             BalanceRow {
                 account: "Expenses:Food".to_string(),
-                positions: vec![Position { currency: "EUR".to_string(), amount: "100".parse().unwrap() }],
+                positions: vec![Position {
+                    currency: "EUR".to_string(),
+                    amount: "100".parse().unwrap(),
+                }],
                 converted_positions: None,
             },
         ];
@@ -684,6 +755,9 @@ mod tests {
 
         assert_eq!(result.len(), 2);
         let assets = result.iter().find(|r| r.account == "Assets").unwrap();
-        assert_eq!(assets.positions[0].amount, "1500".parse::<Decimal>().unwrap());
+        assert_eq!(
+            assets.positions[0].amount,
+            "1500".parse::<Decimal>().unwrap()
+        );
     }
 }

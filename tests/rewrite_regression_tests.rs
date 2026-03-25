@@ -87,7 +87,10 @@ fn rledger_rejects_convert_of_summed_positions() {
 fn bal_exchange_converts_chf_balance_to_eur() {
     let (stdout, stderr, code) = run_cmd("bal", &["--exchange", "EUR", "Assets:Bank:Bank03581"]);
 
-    assert_eq!(code, 0, "bal --exchange should succeed once supported: {stderr}");
+    assert_eq!(
+        code, 0,
+        "bal --exchange should succeed once supported: {stderr}"
+    );
     assert!(stdout.contains("Assets:Bank:Bank03581"));
     assert!(
         contains_any(&stdout, &["3,000.00 CHF", "3000.00 CHF", "3000 CHF"]),
@@ -107,7 +110,10 @@ fn bal_exchange_converts_chf_balance_to_eur() {
 fn reg_exchange_converts_chf_posting_to_eur() {
     let (stdout, stderr, code) = run_cmd("reg", &["--exchange", "EUR", "Assets:Bank:Bank03581"]);
 
-    assert_eq!(code, 0, "reg --exchange should succeed once supported: {stderr}");
+    assert_eq!(
+        code, 0,
+        "reg --exchange should succeed once supported: {stderr}"
+    );
     assert!(stdout.contains("2025-07-15"));
     assert!(stdout.contains("Assets:Bank:Bank03581"));
     assert!(
@@ -128,7 +134,10 @@ fn reg_exchange_total_shows_converted_running_total() {
     );
 
     assert_eq!(code, 0, "reg --exchange --total should succeed: {stderr}");
-    assert!(stdout.contains("Running Total"), "original running total column should remain");
+    assert!(
+        stdout.contains("Running Total"),
+        "original running total column should remain"
+    );
     assert!(
         stdout.contains("Total (EUR)") || stdout.contains("Converted Total"),
         "converted running total column should appear, got: {stdout}"
