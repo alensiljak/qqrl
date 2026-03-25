@@ -173,19 +173,19 @@ ledger2bql reg -X EUR        # ⚠️ Phase 0 risk
 
 | Feature                        | ledger2bql | qqrl | Notes                                   |
 |--------------------------------|------------|------|-----------------------------------------|
-| Basic register                 | ✓          | ☐    | date, account, payee, narration, amount |
-| Account filter                 | ✓          | ☐    |                                         |
-| Payee filter (`@`)             | ✓          | ☐    |                                         |
-| Multiple patterns + exclusions | ✓          | ☐    |                                         |
-| `--begin` / `--end`            | ✓          | ☐    |                                         |
-| `--date-range`                 | ✓          | ☐    |                                         |
-| `--currency`                   | ✓          | ☐    |                                         |
-| `--amount`                     | ✓          | ☐    |                                         |
-| `--total` / `-T`               | ✓          | ☐    | Running total column                    |
-| `--sort` / `-S`                | ✓          | ☐    |                                         |
-| `--limit`                      | ✓          | ☐    |                                         |
+| Basic register                 | ✓          | ✓    | date, account, payee, narration, amount |
+| Account filter                 | ✓          | ✓    |                                         |
+| Payee filter (`@`)             | ✓          | ✓    |                                         |
+| Multiple patterns + exclusions | ✓          | ✓    |                                         |
+| `--begin` / `--end`            | ✓          | ✓    |                                         |
+| `--date-range`                 | ✓          | ✓    |                                         |
+| `--currency`                   | ✓          | ✓    |                                         |
+| `--amount`                     | ✓          | ✓    |                                         |
+| `--total` / `-T`               | ✓          | ✓    | Running total column                    |
+| `--sort` / `-S`                | ✓          | ✓    |                                         |
+| `--limit`                      | ✓          | ✓    |                                         |
 | `--exchange` / `-X`            | ✓          | ☐    | ⚠️ Phase 0                               |
-| Multi-currency running totals  | ✓          | ☐    | Tracks each currency separately         |
+| Multi-currency running totals  | ✓          | ✓    | Tracks each currency separately         |
 | `--no-pager`                   | ✓          | ☐    |                                         |
 
 ---
