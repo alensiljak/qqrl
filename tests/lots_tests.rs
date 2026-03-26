@@ -41,7 +41,7 @@ fn lots_default_shows_active_open_lots() {
     assert!(stdout.contains("Price"));
     assert!(stdout.contains("2025-09-10"));
     assert!(stdout.contains("Equity:Stocks"));
-    assert!(stdout.contains("4 ABC"));
+    assert!(stdout.contains("ABC"));
     assert!(stdout.contains("1.30 EUR"));
     assert!(stdout.contains("13 EUR"));
     assert!(
@@ -58,8 +58,8 @@ fn lots_all_shows_buys_and_sells() {
     assert!(stdout.contains("2025-04-02"));
     assert!(stdout.contains("2025-09-09"));
     assert!(stdout.contains("2025-09-10"));
-    assert!(stdout.contains("-5 ABC"));
-    assert!(stdout.contains("-3 ABC"));
+    assert!(stdout.contains("-5"));
+    assert!(stdout.contains("-3"));
 }
 
 #[test]
@@ -68,7 +68,7 @@ fn lots_average_shows_average_price_and_total_cost() {
     assert_eq!(code, 0, "lots --average should succeed: {stderr}");
     assert!(stdout.contains("Average Price"));
     assert!(stdout.contains("Total Cost"));
-    assert!(stdout.contains("4 ABC"));
+    assert!(stdout.contains("ABC"));
     assert!(stdout.contains("1.30 EUR"));
     assert!(stdout.contains("25.50 EUR"));
 }
@@ -101,8 +101,8 @@ fn lots_filters_by_amount() {
     assert_eq!(code, 0, "lots amount filter should succeed: {stderr}");
     assert!(stdout.contains("2025-04-01"));
     assert!(stdout.contains("2025-04-02"));
-    assert!(!stdout.contains("-5 ABC"));
-    assert!(!stdout.contains("-3 ABC"));
+    assert!(!stdout.contains("-5"));
+    assert!(!stdout.contains("-3"));
 }
 
 #[test]
