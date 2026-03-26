@@ -9,7 +9,7 @@ repository = "https://github.com/alensiljak/qqrl"
 
 readme = "README.md"
 categories = ["command-line-utilities", "finance", "accounting"]
-keywords = ["ledger", "beancount", "query", "finance", "accounting", "cli"]
+keywords = ["beancount", "query", "finance", "accounting", "cli"]
 
 [dependencies]
 clap = { version = "4", features = ["derive"] }
