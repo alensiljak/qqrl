@@ -8,8 +8,8 @@ authors = ["Alen Šiljak"]
 repository = "https://github.com/alensiljak/qqrl"
 
 readme = "README.md"
-categories = ["command-line-utilities", "finance", "accounting"]
-keywords = ["beancount", "query", "finance", "accounting", "cli"]
+categories = ["command-line-utilities", "finance"]
+keywords = ["beancount", "query", "finance", "cli"]
 
 [dependencies]
 clap = { version = "4", features = ["derive"] }
