@@ -172,28 +172,34 @@ error: failed to parse query: parse error at position 35: found '.' expected ide
 
 ### Revised Plan Based on Phase 0 Results
 
-**Summary**: 4 of 6 commands are unblocked and ready for Phase 1. The `assert` and `price` commands depend on rledger's `#balances` and `#prices` system tables, which are pending feature requests.
+**Summary**: 4 of 6 commands are unblocked for Phase 1 work. The `lots` command is now implemented in qqrl for the supported `rledger` query shapes. The `assert` and `price` commands still depend on rledger's `#balances` and `#prices` system tables, which are pending feature requests.
 
 **Unblocked commands** (implement in Phase 1):
 
 - `bal` (balance) — uses standard BQL, `convert(position, 'EUR')` works ✅
 - `reg` (register) — uses standard BQL ✅
 - `query` (named queries) — regex scan of .bean file ✅
-- `lots` (investment lots) — uses `cost_number`, `value(SUM(position))` ✅
+- `lots` (investment lots) — core command implemented; active lots, `--all`, `--average`, filters, sorting, and limit work ✅
 
 **Blocked commands** (Phase 1.5 or Phase 2, pending rledger):
 
 - `assert` (balance assertions) — blocked on `#balances` system table ⏳
 - `price` (price history) — blocked on `#prices` system table ⏳
 
+**Partially blocked behavior inside implemented commands**:
+
+- `lots` market value column — still blocked by current `rledger` `value(...)` behavior ⏳
+
 **Phase 1 Strategy**:
 
 1. Implement full CLI skeleton with all 6 commands defined
 2. Implement the 4 unblocked commands (bal, reg, query, lots)
 3. Add placeholder error messages for `assert` and `price` that point to the rledger feature request
-4. Ship Phase 1 with 4/6 commands working
+4. Ship Phase 1 with 4/6 commands working, noting the reduced `lots` output until `rledger` value support is usable
 
 When rledger releases `#balances` and `#prices` support, implement Phase 1.5 to complete the remaining 2 commands (no architectural changes needed).
+
+When `rledger` exposes a stable `value(...)` query shape for lots, extend `qqrl lots` to restore the market-value column without changing the CLI surface.
 
 **Revised timeline**: ~3–4 weeks for Phase 1 (instead of 4–6 weeks)
 
@@ -226,6 +232,38 @@ Full rewrite. No intermediate Python step — go straight to Rust.
 10. `src/commands/assert.rs` — `parse_query()` + `format_output()`
 11. `src/commands/price.rs` — `parse_query()` + `format_output()`
 
+### Phase 1 status snapshot
+
+- `balance` implemented and covered by integration tests
+- `register` implemented and covered by integration tests
+- `query` implemented
+- `lots` implemented with a reduced output shape that omits market value for now
+- `assert` placeholder implemented
+- `price` placeholder implemented
+
+### Lots status
+
+Implemented in qqrl today:
+
+- dedicated `lots` CLI options: `--all`, `--average`, `--sort-by`
+- default active-lot view using grouped positions with positive remaining quantity
+- detailed lot view with `--all`
+- average-cost view with `--average`
+- account, date, currency, and amount filters
+- sort and limit support
+- integration coverage in `tests/lots_tests.rs`
+
+Still pending for full parity:
+
+- market value / `Value` column in output
+- any exchange-driven valuation for lots
+
+Current blocker details:
+
+- `value(position)` currently fails for the detailed query shape unless a target currency is provided
+- `value(SUM(position))` returns an inventory-like structure in current testing rather than a directly displayable market-value amount
+- until that behavior is fixed or clarified upstream, `lots` uses `price` and `cost` columns only
+
 **Tests**
 
 - Port the existing pytest suite to Rust integration tests
@@ -247,7 +285,7 @@ Full rewrite. No intermediate Python step — go straight to Rust.
 | `bal`    | Easy                    | Medium — hierarchy mode needs parent-account aggregation | Low                                 |
 | `reg`    | Easy                    | Medium — running totals, multi-currency                  | Low                                 |
 | `query`  | Easy — .bean regex scan | Easy                                                     | Low                                 |
-| `lots`   | Medium                  | High — inventory arithmetic, unclear rledger functions   | **High**                            |
+| `lots`   | Medium                  | High — mixed JSON shapes, active lot aggregation, blocked market value output | **High** |
 | `assert` | Easy                    | Easy                                                     | Medium — `#balances` compat unclear |
 | `price`  | Easy                    | Easy                                                     | Medium — `#prices` compat unclear   |
 
@@ -258,7 +296,7 @@ Full rewrite. No intermediate Python step — go straight to Rust.
 | Risk                                         | Impact                             | Mitigation                                                                                      |
 |----------------------------------------------|------------------------------------|-------------------------------------------------------------------------------------------------|
 | `convert(position, 'EUR')` not in rledger    | `--exchange/-X` broken             | Phase 0 test; workaround with two queries + post-processing, or file rledger issue              |
-| `value(position)` not in rledger             | `lots` market value column broken  | Phase 0 test; omit column or use cost as fallback                                               |
+| `value(position)` not in usable rledger shape | `lots` market value column broken  | Current implementation omits the value column until upstream behavior is stable                  |
 | `cost_number` column not in rledger          | `lots` cost per unit broken        | Phase 0 test; find rledger equivalent                                                           |
 | `#balances` / `#prices` tables not supported | `assert` / `price` commands broken | Phase 0 test; rledger uses `BALANCES` shorthand — find exact equivalent                         |
 | rledger JSON schema changes                  | Output parser breaks silently      | Pin rledger minimum version in docs; test on CI with rledger installed                          |
@@ -310,8 +348,8 @@ From ledger2bql, these things translate directly:
 
 ## rledger Resources
 
-- Repo: https://github.com/rustledger/rustledger
-- BQL Reference: https://rustledger.github.io/reference/bql.html
-- Query command: https://rustledger.github.io/commands/query.html
-- Compatibility report: https://rustledger.github.io/reference/compatibility.html
-- Releases (binaries): https://github.com/rustledger/rustledger/releases/latest
+- RustLedger [repo](https://github.com/rustledger/rustledger)
+- BQL Reference, [docs](https://rustledger.github.io/reference/bql.html)
+- Query command, [doc](https://rustledger.github.io/commands/query.html)
+- Compatibility [report](https://rustledger.github.io/reference/compatibility.html)
+- RustLedger [releases](https://github.com/rustledger/rustledger/releases/latest) (binaries)

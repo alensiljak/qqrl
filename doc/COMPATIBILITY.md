@@ -46,18 +46,18 @@ diff e.norm.txt a.norm.txt
 
 | Option                | Short | ledger2bql | qqrl | Test case                    |
 |-----------------------|-------|------------|------|------------------------------|
-| `--begin DATE`        | `-b`  | ✓          | ☐    | `-b 2025-03-01`              |
-| `--end DATE`          | `-e`  | ✓          | ☐    | `-e 2025-09-01`              |
-| `--date-range RANGE`  | `-d`  | ✓          | ☐    | `-d 2025-03..2025-09`        |
+| `--begin DATE`        | `-b`  | ✓          | ✓    | `-b 2025-03-01`              |
+| `--end DATE`          | `-e`  | ✓          | ✓    | `-e 2025-09-01`              |
+| `--date-range RANGE`  | `-d`  | ✓          | ✓    | `-d 2025-03..2025-09`        |
 | `--empty`             | —     | ✓          | ☐    | Flag accepted but ignored    |
-| `--sort FIELDS`       | `-S`  | ✓          | ☐    | `-S account` / `-S -account` |
-| `--limit N`           | —     | ✓          | ☐    | `--limit 3`                  |
-| `--amount FILTER`     | `-a`  | ✓          | ☐    | `-a >50EUR`                  |
-| `--amount` (multiple) | `-a`  | ✓          | ☐    | `-a >10 -a <200`             |
-| `--currency CURR`     | `-c`  | ✓          | ☐    | `-c EUR`                     |
-| `--currency (multi)`  | `-c`  | ✓          | ☐    | `-c EUR,BAM`                 |
+| `--sort FIELDS`       | `-S`  | ✓          | ✓    | `-S account` / `-S -account` |
+| `--limit N`           | —     | ✓          | ✓    | `--limit 3`                  |
+| `--amount FILTER`     | `-a`  | ✓          | ✓    | `-a >50EUR`                  |
+| `--amount` (multiple) | `-a`  | ✓          | ✓    | `-a >10 -a <200`             |
+| `--currency CURR`     | `-c`  | ✓          | ✓    | `-c EUR`                     |
+| `--currency (multi)`  | `-c`  | ✓          | ✓    | `-c EUR,BAM`                 |
 | `--exchange CURR`     | `-X`  | ✓          | ✓    | `-X EUR`                      |
-| `--total`             | `-T`  | ✓          | ☐    |                              |
+| `--total`             | `-T`  | ✓          | ✓    | Not supported by `lots`      |
 | `--no-pager`          | —     | ✓          | ☐    |                              |
 
 ---
@@ -66,13 +66,13 @@ diff e.norm.txt a.norm.txt
 
 | Pattern      | Example                     | ledger2bql | qqrl | Notes                        |
 |--------------|-----------------------------|------------|------|------------------------------|
-| Plain regex  | `Bank`                      | ✓          | ☐    | Substring match              |
-| Starts with  | `^Assets`                   | ✓          | ☐    | BQL: `account ~ '^Assets'`   |
-| Ends with    | `Checking$`                 | ✓          | ☐    | BQL: `account ~ 'Checking$'` |
-| Exact match  | `^Assets:Bank:Checking$`    | ✓          | ☐    |                              |
-| Exclusion    | `Assets not Checking`       | ✓          | ☐    | `not` keyword                |
-| Payee filter | `@Employer`                 | ✓          | ☐    | `@` prefix                   |
-| Combined     | `Assets not Bank @Employer` | ✓          | ☐    |                              |
+| Plain regex  | `Bank`                      | ✓          | ✓    | Substring match              |
+| Starts with  | `^Assets`                   | ✓          | ✓    | BQL: `account ~ '^Assets'`   |
+| Ends with    | `Checking$`                 | ✓          | ✓    | BQL: `account ~ 'Checking$'` |
+| Exact match  | `^Assets:Bank:Checking$`    | ✓          | ✓    |                              |
+| Exclusion    | `Assets not Checking`       | ✓          | ✓    | `not` keyword                |
+| Payee filter | `@Employer`                 | ✓          | ✓    | `@` prefix                   |
+| Combined     | `Assets not Bank @Employer` | ✓          | ✓    |                              |
 
 ---
 
@@ -80,14 +80,14 @@ diff e.norm.txt a.norm.txt
 
 | Format      | Example                  | ledger2bql | qqrl |
 |-------------|--------------------------|------------|------|
-| Year only   | `2025`                   | ✓          | ☐    |
-| Year-Month  | `2025-03`                | ✓          | ☐    |
-| Full date   | `2025-03-15`             | ✓          | ☐    |
-| Year range  | `2025..2026`             | ✓          | ☐    |
-| Month range | `2025-03..2025-09`       | ✓          | ☐    |
-| Day range   | `2025-03-01..2025-09-01` | ✓          | ☐    |
-| Open start  | `..2025-09`              | ✓          | ☐    |
-| Open end    | `2025-03..`              | ✓          | ☐    |
+| Year only   | `2025`                   | ✓          | ✓    |
+| Year-Month  | `2025-03`                | ✓          | ✓    |
+| Full date   | `2025-03-15`             | ✓          | ✓    |
+| Year range  | `2025..2026`             | ✓          | ✓    |
+| Month range | `2025-03..2025-09`       | ✓          | ✓    |
+| Day range   | `2025-03-01..2025-09-01` | ✓          | ✓    |
+| Open start  | `..2025-09`              | ✓          | ✓    |
+| Open end    | `2025-03..`              | ✓          | ✓    |
 
 ---
 
@@ -95,13 +95,13 @@ diff e.norm.txt a.norm.txt
 
 | Operator         | Example       | ledger2bql | qqrl |
 |------------------|---------------|------------|------|
-| Greater than     | `-a >100`     | ✓          | ☐    |
-| Greater or equal | `-a >=100EUR` | ✓          | ☐    |
-| Less than        | `-a <50USD`   | ✓          | ☐    |
-| Less or equal    | `-a <=50`     | ✓          | ☐    |
-| Equal            | `-a =1000`    | ✓          | ☐    |
-| With currency    | `-a >100EUR`  | ✓          | ☐    |
-| Negative amount  | `-a <-100`    | ✓          | ☐    |
+| Greater than     | `-a >100`     | ✓          | ✓    |
+| Greater or equal | `-a >=100EUR` | ✓          | ✓    |
+| Less than        | `-a <50USD`   | ✓          | ✓    |
+| Less or equal    | `-a <=50`     | ✓          | ✓    |
+| Equal            | `-a =1000`    | ✓          | ✓    |
+| With currency    | `-a >100EUR`  | ✓          | ✓    |
+| Negative amount  | `-a <-100`    | ✓          | ✓    |
 
 ---
 
@@ -203,10 +203,10 @@ ledger2bql query --no-pager holidays
 
 | Feature                         | ledger2bql | qqrl | Notes                                   |
 |---------------------------------|------------|------|-----------------------------------------|
-| Exact name match                | ✓          | ☐    |                                         |
-| Case-insensitive match          | ✓          | ☐    |                                         |
+| Exact name match                | ✓          | ☐    | `query` command still stubbed           |
+| Case-insensitive match          | ✓          | ☐    | `query` command still stubbed           |
 | Partial match                   | ✓          | ☐    | Falls back when no exact match          |
-| Results formatted as table      | ✓          | ☐    |                                         |
+| Results formatted as table      | ✓          | ☐    | `query` command still stubbed           |
 | `--no-pager`                    | ✓          | ☐    |                                         |
 | Source: `.bean` file regex scan | —          | ☐    | Replaces `beancount.loader.load_file()` |
 
@@ -230,19 +230,19 @@ ledger2bql lots -c EUR
 
 | Feature                    | ledger2bql | qqrl | Notes                     |
 |----------------------------|------------|------|---------------------------|
-| Active lots (default)      | ✓          | ☐    | HAVING SUM(units) > 0     |
-| All lots (`--all`)         | ✓          | ☐    | Includes sold lots        |
-| Average cost (`--average`) | ✓          | ☐    | GROUP BY account+currency |
-| Detailed lots              | ✓          | ☐    | Per-lot date, cost, value |
-| `--sort-by date`           | ✓          | ☐    |                           |
-| `--sort-by price`          | ✓          | ☐    |                           |
-| `--sort-by symbol`         | ✓          | ☐    |                           |
-| Account filter             | ✓          | ☐    |                           |
-| `--begin` / `--end`        | ✓          | ☐    |                           |
-| `--currency`               | ✓          | ☐    |                           |
-| `cost(position)` column    | ✓          | ☐    | ⚠️ Phase 0                 |
-| `value(position)` column   | ✓          | ☐    | ⚠️ Phase 0 — market value  |
-| `cost_number` column       | ✓          | ☐    | ⚠️ Phase 0 — cost per unit |
+| Active lots (default)      | ✓          | ✓    | HAVING SUM(units) > 0     |
+| All lots (`--all`)         | ✓          | ✓    | Includes sold lots        |
+| Average cost (`--average`) | ✓          | ✓    | GROUP BY account+currency |
+| Detailed lots              | ✓          | △    | Per-lot date, price, cost; value omitted |
+| `--sort-by date`           | ✓          | ✓    |                           |
+| `--sort-by price`          | ✓          | ✓    |                           |
+| `--sort-by symbol`         | ✓          | ✓    |                           |
+| Account filter             | ✓          | ✓    |                           |
+| `--begin` / `--end`        | ✓          | ✓    |                           |
+| `--currency`               | ✓          | ✓    |                           |
+| `cost(position)` column    | ✓          | ✓    |                           |
+| `value(position)` column   | ✓          | ☐    | Blocked by current `rledger` value behavior |
+| `cost_number` column       | ✓          | ✓    | Used for price / average cost |
 | `--no-pager`               | ✓          | ☐    |                           |
 
 ---
@@ -260,7 +260,7 @@ ledger2bql assert -c EUR
 
 | Feature                   | ledger2bql | qqrl | Notes                                        |
 |---------------------------|------------|------|----------------------------------------------|
-| List all assertions       | ✓          | ☐    | date, account, balance                       |
+| List all assertions       | ✓          | ☐    | command returns placeholder error            |
 | Account filter            | ✓          | ☐    |                                              |
 | Date filter               | ✓          | ☐    |                                              |
 | Currency filter           | ✓          | ☐    |                                              |
@@ -284,7 +284,7 @@ ledger2bql price -c USD
 
 | Feature                 | ledger2bql | qqrl | Notes                                        |
 |-------------------------|------------|------|----------------------------------------------|
-| All prices              | ✓          | ☐    | date, symbol, amount                         |
+| All prices              | ✓          | ☐    | command returns placeholder error            |
 | Symbol filter           | ✓          | ☐    | positional arg                               |
 | Date filter             | ✓          | ☐    |                                              |
 | Currency filter         | ✓          | ☐    |                                              |
@@ -304,13 +304,13 @@ rledger query -f json tests/sample-ledger.bean "QUERY"
 | Feature                    | Used in                        | BQL query to test                                                   | Status |
 |----------------------------|--------------------------------|---------------------------------------------------------------------|--------|
 | `convert(position, 'EUR')` | `bal`, `reg` with `--exchange` | `SELECT account, sum(convert(position, 'EUR')) GROUP BY account`    | ✓      |
-| `convert(sum(position), 'EUR')` | direct aggregate conversion | `SELECT account, convert(sum(position), 'EUR') GROUP BY account` | ☐ |
-| `value(position)`          | `lots`                         | `SELECT account, value(SUM(position)) GROUP BY account`             | ☐      |
-| `cost_number`              | `lots`                         | `SELECT account, cost_number WHERE cost_number IS NOT NULL LIMIT 5` | ☐      |
+| `convert(sum(position), 'EUR')` | direct aggregate conversion | `SELECT account, convert(sum(position), 'EUR') GROUP BY account` | ✗ |
+| `value(position)`          | `lots`                         | `SELECT account, value(SUM(position)) GROUP BY account`             | △      |
+| `cost_number`              | `lots`                         | `SELECT account, cost_number WHERE cost_number IS NOT NULL LIMIT 5` | ✓      |
 | `#balances` system table   | `assert`                       | `SELECT date, account, amount FROM #balances`                       | ☐      |
 | `#prices` system table     | `price`                        | `SELECT date, currency, amount FROM #prices`                        | ☐      |
-| JSON schema for Amount     | all                            | Check field names in `-f json` output                               | ☐      |
-| JSON schema for Position   | all                            | Check field names in `-f json` output                               | ☐      |
+| JSON schema for Amount     | all                            | Check field names in `-f json` output                               | ✓      |
+| JSON schema for Position   | all                            | Check field names in `-f json` output                               | ✓      |
 | Android ARM64 binary       | runtime                        | Install and run on Termux                                           | ☐      |
 
 ---

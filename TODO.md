@@ -2,4 +2,5 @@
 
 - [ ] port tests
 - [ ] port individual commands
-- [ ] implement `--exchange/-X` in `bal` command
+- [x] implement `--exchange/-X` in `bal` command
+- [ ] handle the missing value() is `lots`

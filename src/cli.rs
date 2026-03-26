@@ -30,7 +30,7 @@ pub enum Command {
 
     /// Investment lots and cost basis
     #[command(visible_alias = "l", visible_alias = "lot")]
-    Lots(CommonOptions),
+    Lots(LotsOptions),
 
     /// Balance assertions
     #[command(visible_alias = "a")]
@@ -106,6 +106,70 @@ pub struct CommonOptions {
     /// Exclude accounts with zero balance (balance command only)
     #[arg(short = 'Z', long)]
     pub zero: bool,
+
+    /// Ledger file path (overrides LEDGER_FILE env var)
+    #[arg(long)]
+    pub ledger: Option<PathBuf>,
+}
+
+/// Options for the lots command.
+#[derive(Debug, Parser)]
+pub struct LotsOptions {
+    /// Account pattern(s) to filter (supports multiple: 'Assets not Bank @Employer')
+    #[arg(value_name = "PATTERN", num_args = 0..)]
+    pub account: Vec<String>,
+
+    /// Start date (YYYY-MM-DD or date range format)
+    #[arg(short, long)]
+    pub begin: Option<String>,
+
+    /// End date (YYYY-MM-DD or date range format)
+    #[arg(short, long)]
+    pub end: Option<String>,
+
+    /// Date range (format: YYYY-MM..YYYY-MM or YYYY-MM-DD..YYYY-MM-DD)
+    #[arg(short, long)]
+    pub date_range: Option<String>,
+
+    /// Amount filter(s) — e.g., '>100EUR', '<=50USD'
+    #[arg(short, long)]
+    pub amount: Vec<String>,
+
+    /// Currency filter(s) — e.g., 'EUR' or 'EUR,USD'
+    #[arg(short, long)]
+    pub currency: Vec<String>,
+
+    /// Exchange currency — valuate lots in this currency
+    #[arg(short = 'X', long)]
+    pub exchange: Option<String>,
+
+    /// Sort by field(s) — prefix with '-' for descending
+    #[arg(short = 'S', long, allow_hyphen_values = true)]
+    pub sort: Option<String>,
+
+    /// Limit number of results
+    #[arg(long)]
+    pub limit: Option<usize>,
+
+    /// Disable pager output
+    #[arg(long)]
+    pub no_pager: bool,
+
+    /// Sort lots by date, price, or symbol
+    #[arg(short = 's', long, value_parser = ["date", "price", "symbol"])]
+    pub sort_by: Option<String>,
+
+    /// Show average cost for each symbol
+    #[arg(short = 'A', long)]
+    pub average: bool,
+
+    /// Show only active/open lots
+    #[arg(long, default_value_t = true, overrides_with = "show_all")]
+    pub active: bool,
+
+    /// Show all lots, including sold ones
+    #[arg(long = "all", overrides_with = "active")]
+    pub show_all: bool,
 
     /// Ledger file path (overrides LEDGER_FILE env var)
     #[arg(long)]
