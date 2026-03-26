@@ -12,8 +12,8 @@ use crate::{
 
 #[derive(Debug, Clone)]
 struct Quantity {
-    currency: String,
     amount: Decimal,
+    //currency: String,
 }
 
 #[derive(Debug, Clone)]
@@ -268,10 +268,9 @@ fn parse_amount(value: &Value, label: &str) -> Result<Amount, Box<dyn std::error
 }
 
 fn parse_quantity(value: &Value) -> Result<Quantity, Box<dyn std::error::Error>> {
-    if let Some(currency) = value.get("currency").and_then(Value::as_str) {
+    if let Some(_currency) = value.get("currency").and_then(Value::as_str) {
         let amount = parse_decimal_value(&value["number"], "quantity")?;
         return Ok(Quantity {
-            currency: currency.to_string(),
             amount,
         });
     }
@@ -282,12 +281,12 @@ fn parse_quantity(value: &Value) -> Result<Quantity, Box<dyn std::error::Error>>
     let first = positions
         .first()
         .ok_or("empty positions array in quantity")?;
-    let currency = first["currency"]
-        .as_str()
-        .ok_or("missing currency in quantity position")?
-        .to_string();
+    // let currency = first["currency"]
+    //     .as_str()
+    //     .ok_or("missing currency in quantity position")?
+    //     .to_string();
     let amount = parse_decimal_value(&first["number"], "quantity")?;
-    Ok(Quantity { currency, amount })
+    Ok(Quantity { amount })
 }
 
 fn format_decimal(amount: Decimal) -> String {
