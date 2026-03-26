@@ -11,13 +11,17 @@ Quick Query for Rust Ledger
 
 ## Installation
 
-For the moment, the app can only be installed by building from the source, as it is in in a very early stage of development.
+```sh
+cargo install qqrl
+```
+
+## Development
+
+The app can be installed by building from the source:
 
 ```sh
 cargo install --path .
 ```
-
-## Development
 
 Run tests:
 
