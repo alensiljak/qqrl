@@ -23,20 +23,17 @@ plugin "beancount.plugins.implicit_prices"
 1900-01-01 open Expenses:Transport:Bus
 1900-01-01 open Expenses:Transport:Train
 
-; prices
+; ledger
 
 2025-01-01 price EUR  1.95583 BAM
 2025-01-01 price EUR  1.0268  USD
 2025-01-01 price EUR  1.1325  USD
-2025-01-10 price CHF  1.0647  EUR
-2025-03-30 price ABC  1.20    EUR
-2025-04-15 price ABC  1.35    EUR
-
-; transactions
 
 2025-01-01 * "Initial Balance"
   Assets:Bank:Checking  1000 EUR
   Equity:Opening-Balances  -1000 EUR
+
+2025-01-10 price CHF  1.0647  EUR
 
 2025-02-01 txn "Ice Cream Shop" "Ice Cream"
   Expenses:Sweets  20 EUR
@@ -49,6 +46,8 @@ plugin "beancount.plugins.implicit_prices"
 2025-03-15 txn "Employer" "Salary"
   Assets:Bank:Checking  1000 EUR
   Income:Salary  -1000 EUR
+
+2025-03-30 price ABC  1.20    EUR
 
 2025-04-01 txn "Buy Stocks"
   Equity:Stocks 5 ABC { 1.25 EUR }
@@ -65,6 +64,8 @@ plugin "beancount.plugins.implicit_prices"
 2025-06-04 txn "Metro" "public transport"
   Expenses:Transport 7 USD
   Assets:Cash:USD
+
+2025-04-15 price ABC  1.35    EUR
 
 2025-07-15 txn "Anonymous Org." "Illicit money"
   Assets:Bank:Bank03581  3000 CHF
@@ -93,7 +94,7 @@ plugin "beancount.plugins.implicit_prices"
   Assets:Bank:Checking
 
 2025-09-10 txn "Sell some stock" "split lot"
-  Equity:Stocks -3 ABC { 1.30 EUR, 2025-04-02 } @ 1.35 EUR
+  Equity:Stocks -3 ABC { 1.30 EUR, 2025-04-02 } @ 1.40 EUR
   Assets:Bank:Checking
 
 2025-11-07 balance Assets:Bank:Checking  595.47 EUR

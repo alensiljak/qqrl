@@ -1,0 +1,1 @@
+set LEDGER_FILE=sample-ledger.bean
