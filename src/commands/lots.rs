@@ -307,7 +307,11 @@ fn format_decimal(amount: Decimal) -> String {
         .collect::<Vec<_>>()
         .join(",");
     let sign = if negative { "-" } else { "" };
-    format!("{sign}{with_commas}.{frac_part}")
+    if frac_part.chars().all(|c| c == '0') {
+        format!("{sign}{with_commas}")
+    } else {
+        format!("{sign}{with_commas}.{frac_part}")
+    }
 }
 
 fn format_quantity(quantity: &Quantity) -> String {
