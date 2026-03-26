@@ -1,10 +1,15 @@
 [package]
 name = "qqrl"
-version = "0.4.2"
+version = "0.4.3"
+description = "Quick Query for Rust Ledger"
 edition = "2021"
 license = "AGPL-3.0"
 authors = ["Alen Šiljak"]
 repository = "https://github.com/alensiljak/qqrl"
+
+readme = "README.md"
+categories = ["command-line-utilities", "finance", "accounting"]
+keywords = ["ledger", "beancount", "query", "finance", "accounting", "cli"]
 
 [dependencies]
 clap = { version = "4", features = ["derive"] }

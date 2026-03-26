@@ -2,6 +2,9 @@
 
 Quick Query for Rust Ledger
 
+<img src="https://img.shields.io/crates/v/qqrl.svg" alt="Crates.io">
+<img src="https://docs.rs/qqrl/badge.svg" alt="Docs.rs">
+
 ## Purpose
 
 `qqrl` is a rewrite of [ledger2bql](https://github.com/alensiljak/ledger2bql) with the change of underlying engine from Python Beancount to Rust Ledger.
