@@ -311,7 +311,7 @@ fn format_decimal(amount: Decimal) -> String {
 }
 
 fn format_quantity(quantity: &Quantity) -> String {
-    format!("{} {}", format_decimal(quantity.amount), quantity.currency)
+    format_decimal(quantity.amount)
 }
 
 fn format_amount_cell(amount: Decimal, currency: &str) -> String {
