@@ -233,7 +233,7 @@ ledger2bql lots -c EUR
 | Active lots (default)      | ✓          | ✓    | HAVING SUM(units) > 0     |
 | All lots (`--all`)         | ✓          | ✓    | Includes sold lots        |
 | Average cost (`--average`) | ✓          | ✓    | GROUP BY account+currency |
-| Detailed lots              | ✓          | △    | Per-lot date, price, cost; value omitted |
+| Detailed lots              | ✓          | △    | Per-lot date, price, cost; value questionable |
 | `--sort-by date`           | ✓          | ✓    |                           |
 | `--sort-by price`          | ✓          | ✓    |                           |
 | `--sort-by symbol`         | ✓          | ✓    |                           |
