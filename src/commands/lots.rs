@@ -49,6 +49,7 @@ pub fn run(opts: LotsOptions) -> Result<(), Box<dyn std::error::Error>> {
     let query = build_query(&opts);
     let rows = run_bql_query(&config, &query)?;
 
+    println!("\nYour BQL query is:\n{query}\n");
     if opts.average {
         let average_rows = parse_average_rows(&rows)?;
         print_average_table(&average_rows);
@@ -398,6 +399,7 @@ mod tests {
             date_range: None,
             amount: vec![],
             currency: vec![],
+            exchange: None,
             sort: None,
             limit: None,
             no_pager: false,

@@ -73,6 +73,7 @@ pub fn run(opts: CommonOptions) -> Result<(), Box<dyn std::error::Error>> {
         None
     };
 
+    println!("\nYour BQL query is:\n{query}\n");
     print_table(
         &balance_rows,
         grand_total.as_ref(),

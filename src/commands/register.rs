@@ -36,6 +36,7 @@ pub fn run(opts: CommonOptions) -> Result<(), Box<dyn std::error::Error>> {
     let rows = run_bql_query(&config, &query)?;
     let register_rows = parse_rows(&rows)?;
 
+    println!("\nYour BQL query is:\n{query}\n");
     print_table(&register_rows, opts.total, opts.exchange.as_deref());
     Ok(())
 }
