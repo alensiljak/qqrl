@@ -37,7 +37,7 @@ diff e.norm.txt a.norm.txt
 
 | Option             | ledger2bql | qqrl | Notes               |
 |--------------------|------------|------|---------------------|
-| `--version`        | ✓          | ☐    |                     |
+| `--version`        | ✓          | ✓    |                     |
 | `--verbose` / `-v` | ✓          | ☐    | Enable debug output |
 
 ---
@@ -56,7 +56,7 @@ diff e.norm.txt a.norm.txt
 | `--amount` (multiple) | `-a`  | ✓          | ✓    | `-a >10 -a <200`             |
 | `--currency CURR`     | `-c`  | ✓          | ✓    | `-c EUR`                     |
 | `--currency (multi)`  | `-c`  | ✓          | ✓    | `-c EUR,BAM`                 |
-| `--exchange CURR`     | `-X`  | ✓          | ✓    | `-X EUR`                      |
+| `--exchange CURR`     | `-X`  | ✓          | ✓    | `-X EUR`                     |
 | `--total`             | `-T`  | ✓          | ✓    | Not supported by `lots`      |
 | `--no-pager`          | —     | ✓          | ☐    |                              |
 
@@ -145,7 +145,7 @@ ledger2bql bal -X EUR
 | `--hierarchy` / `-H`      | ✓          | ✓    | Parent account aggregation             |
 | `--sort` / `-S`           | ✓          | ✓    |                                        |
 | `--limit`                 | ✓          | ✓    |                                        |
-| `--exchange` / `-X`       | ✓          | ✓    | Uses `sum(convert(position, CURR))`     |
+| `--exchange` / `-X`       | ✓          | ✓    | Uses `sum(convert(position, CURR))`    |
 | `--no-pager`              | ✓          | ☐    |                                        |
 
 ---
