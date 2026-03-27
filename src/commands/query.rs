@@ -99,7 +99,7 @@ fn parse_ledger_queries(ledger_path: &std::path::Path) -> Result<Vec<QueryEntry>
     Ok(queries)
 }
 
-/// Find a query by name using the matching hierarchy:
+/// Find a query by name using the matching hierarchy: 
 /// 1. Exact match (case-sensitive)
 /// 2. Case-insensitive match
 /// 3. Partial match (contains, case-insensitive)
