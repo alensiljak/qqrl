@@ -164,12 +164,16 @@ pub struct LotsOptions {
     pub average: bool,
 
     /// Show only active/open lots
-    #[arg(long, default_value_t = true, overrides_with = "show_all")]
+    #[arg(long, default_value_t = true, overrides_with = "show_all", overrides_with = "closed")]
     pub active: bool,
 
     /// Show all lots, including sold ones
-    #[arg(long = "all", overrides_with = "active")]
+    #[arg(long = "all", overrides_with = "active", overrides_with = "closed")]
     pub show_all: bool,
+
+    /// Show only closed/inactive lots
+    #[arg(long, overrides_with = "active", overrides_with = "show_all")]
+    pub closed: bool,
 
     /// Ledger file path (overrides LEDGER_FILE env var)
     #[arg(long)]

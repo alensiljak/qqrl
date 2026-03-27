@@ -134,6 +134,18 @@ fn build_query(opts: &LotsOptions) -> String {
             query.push_str(&format!(", convert(value(SUM(position)), '{exchange_upper}') as converted_value"));
         }
         (query, Some(vec!["account", "currency(units(position))"]), None)
+    } else if opts.closed {
+        let mut query = "SELECT MAX(date) as date, account, currency(units(position)) as symbol, SUM(units(position)) as quantity, cost_number as price, cost(SUM(position)) as cost, value(SUM(position)) as value".to_string();
+        if opts.exchange.is_some() {
+            let exchange_upper = opts.exchange.as_ref().unwrap().to_uppercase();
+            query.push_str(&format!(", convert(value(SUM(position)), '{exchange_upper}') as converted_value"));
+        }
+        (query, Some(vec![
+            "account",
+            "currency(units(position))",
+            "cost_number",
+            "cost_currency",
+        ]), Some("HAVING SUM(number(units(position))) <= 0".to_string()))
     } else if opts.show_all {
         let mut query = "SELECT date, account, currency(units(position)) as symbol, units(position) as quantity, cost_number as price, cost(position) as cost, value(position) as value".to_string();
         if opts.exchange.is_some() {
@@ -441,6 +453,7 @@ mod tests {
             average: false,
             active: true,
             show_all: false,
+            closed: false,
             ledger: None,
         };
 
@@ -470,6 +483,7 @@ mod tests {
             average: true,
             active: true,
             show_all: false,
+            closed: false,
             ledger: None,
         };
 
@@ -493,11 +507,41 @@ mod tests {
             average: false,
             active: false,
             show_all: true,
+            closed: false,
             ledger: None,
         };
 
         let query = build_query(&opts);
         assert!(query.contains("convert(value(position), 'USD')"));
         assert!(!query.contains("convert(value(position), 'usd')"));
+    }
+
+    #[test]
+    fn build_query_closed_lots() {
+        let opts = LotsOptions {
+            account: vec![],
+            begin: None,
+            end: None,
+            date_range: None,
+            amount: vec![],
+            currency: vec![],
+            exchange: None,
+            sort: None,
+            limit: None,
+            no_pager: false,
+            sort_by: None,
+            average: false,
+            active: false,
+            show_all: false,
+            closed: true,
+            ledger: None,
+        };
+
+        let query = build_query(&opts);
+        assert!(query.contains("cost_number IS NOT NULL"));
+        assert!(query
+            .contains("GROUP BY account, currency(units(position)), cost_number, cost_currency"));
+        assert!(query.contains("HAVING SUM(number(units(position))) <= 0"));
+        assert!(query.contains("ORDER BY date ASC"));
     }
 }
