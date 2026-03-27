@@ -352,7 +352,7 @@ fn print_table(rows: &[LotsRow], exchange: Option<&str>) {
             Cell::new(format_amount_cell(row.value.amount, &row.value.currency))
                 .set_alignment(CellAlignment::Right),
         ];
-        if let Some(exchange_currency) = exchange {
+        if let Some(_exchange_currency) = exchange {
             if let Some(ref converted) = row.converted_value {
                 cells.push(
                     Cell::new(format_amount_cell(converted.amount, &converted.currency))
@@ -404,7 +404,7 @@ fn print_average_table(rows: &[AverageLotsRow], exchange: Option<&str>) {
             Cell::new(format_amount_cell(row.value.amount, &row.value.currency))
                 .set_alignment(CellAlignment::Right),
         ];
-        if let Some(exchange_currency) = exchange {
+        if let Some(_exchange_currency) = exchange {
             if let Some(ref converted) = row.converted_value {
                 cells.push(
                     Cell::new(format_amount_cell(converted.amount, &converted.currency))
