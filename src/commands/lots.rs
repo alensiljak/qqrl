@@ -123,39 +123,21 @@ fn build_query(opts: &LotsOptions) -> String {
 
     where_clauses.push("cost_number IS NOT NULL".to_string());
 
-    // Determine target currency for value() function
-    let value_currency = opts.exchange.as_deref().unwrap_or("cost_currency");
-
     let (select_clause, group_by, having_clause) = if opts.average {
         (
-            format!("SELECT MAX(date) as date, account, currency(units(position)) as symbol, SUM(units(position)) as quantity, SUM(cost_number * number(units(position))) / SUM(number(units(position))) as avg_price, cost(SUM(position)) as total_cost, value(SUM(position), {}) as value", 
-                if value_currency == "cost_currency" { 
-                    "cost_currency".to_string() 
-                } else { 
-                    format!("'{}'", value_currency) 
-                }),
+            "SELECT MAX(date) as date, account, currency(units(position)) as symbol, SUM(units(position)) as quantity, SUM(cost_number * number(units(position))) / SUM(number(units(position))) as avg_price, cost(SUM(position)) as total_cost, value(SUM(position)) as value".to_string(),
             Some(vec!["account", "currency(units(position))"]),
             None,
         )
     } else if opts.show_all {
         (
-            format!("SELECT date, account, currency(units(position)) as symbol, units(position) as quantity, cost_number as price, cost(position) as cost, value(position, {}) as value",
-                if value_currency == "cost_currency" { 
-                    "cost_currency".to_string() 
-                } else { 
-                    format!("'{}'", value_currency) 
-                }),
+            "SELECT date, account, currency(units(position)) as symbol, units(position) as quantity, cost_number as price, cost(position) as cost, value(position) as value".to_string(),
             None,
             None,
         )
     } else {
         (
-            format!("SELECT MAX(date) as date, account, currency(units(position)) as symbol, SUM(units(position)) as quantity, cost_number as price, cost(SUM(position)) as cost, value(SUM(position), {}) as value",
-                if value_currency == "cost_currency" { 
-                    "cost_currency".to_string() 
-                } else { 
-                    format!("'{}'", value_currency) 
-                }),
+            "SELECT MAX(date) as date, account, currency(units(position)) as symbol, SUM(units(position)) as quantity, cost_number as price, cost(SUM(position)) as cost, value(SUM(position)) as value".to_string(),
             Some(vec![
                 "account",
                 "currency(units(position))",
@@ -402,7 +384,6 @@ mod tests {
             date_range: None,
             amount: vec![],
             currency: vec![],
-            exchange: None,
             sort: None,
             limit: None,
             no_pager: false,

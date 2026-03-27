@@ -139,10 +139,6 @@ pub struct LotsOptions {
     #[arg(short, long)]
     pub currency: Vec<String>,
 
-    /// Exchange currency — valuate lots in this currency
-    #[arg(short = 'X', long)]
-    pub exchange: Option<String>,
-
     /// Sort by field(s) — prefix with '-' for descending
     #[arg(short = 'S', long, allow_hyphen_values = true)]
     pub sort: Option<String>,
