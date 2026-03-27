@@ -31,6 +31,7 @@ struct LotsRow {
     price: Decimal,
     cost: Amount,
     value: Amount,
+    converted_value: Option<Amount>,
 }
 
 #[derive(Debug, Clone)]
@@ -42,6 +43,7 @@ struct AverageLotsRow {
     average_price: Decimal,
     total_cost: Amount,
     value: Amount,
+    converted_value: Option<Amount>,
 }
 
 pub fn run(opts: LotsOptions) -> Result<(), Box<dyn std::error::Error>> {
@@ -52,10 +54,12 @@ pub fn run(opts: LotsOptions) -> Result<(), Box<dyn std::error::Error>> {
     println!("\nYour BQL query is:\n{query}\n");
     if opts.average {
         let average_rows = parse_average_rows(&rows)?;
-        print_average_table(&average_rows);
+        let exchange_display = opts.exchange.as_ref().map(|s| s.to_uppercase());
+        print_average_table(&average_rows, exchange_display.as_deref());
     } else {
         let lots_rows = parse_rows(&rows)?;
-        print_table(&lots_rows);
+        let exchange_display = opts.exchange.as_ref().map(|s| s.to_uppercase());
+        print_table(&lots_rows, exchange_display.as_deref());
     }
 
     Ok(())
@@ -124,28 +128,31 @@ fn build_query(opts: &LotsOptions) -> String {
     where_clauses.push("cost_number IS NOT NULL".to_string());
 
     let (select_clause, group_by, having_clause) = if opts.average {
-        (
-            "SELECT MAX(date) as date, account, currency(units(position)) as symbol, SUM(units(position)) as quantity, SUM(cost_number * number(units(position))) / SUM(number(units(position))) as avg_price, cost(SUM(position)) as total_cost, value(SUM(position)) as value".to_string(),
-            Some(vec!["account", "currency(units(position))"]),
-            None,
-        )
+        let mut query = "SELECT MAX(date) as date, account, currency(units(position)) as symbol, SUM(units(position)) as quantity, SUM(cost_number * number(units(position))) / SUM(number(units(position))) as avg_price, cost(SUM(position)) as total_cost, value(SUM(position)) as value".to_string();
+        if opts.exchange.is_some() {
+            let exchange_upper = opts.exchange.as_ref().unwrap().to_uppercase();
+            query.push_str(&format!(", convert(value(SUM(position)), '{exchange_upper}') as converted_value"));
+        }
+        (query, Some(vec!["account", "currency(units(position))"]), None)
     } else if opts.show_all {
-        (
-            "SELECT date, account, currency(units(position)) as symbol, units(position) as quantity, cost_number as price, cost(position) as cost, value(position) as value".to_string(),
-            None,
-            None,
-        )
+        let mut query = "SELECT date, account, currency(units(position)) as symbol, units(position) as quantity, cost_number as price, cost(position) as cost, value(position) as value".to_string();
+        if opts.exchange.is_some() {
+            let exchange_upper = opts.exchange.as_ref().unwrap().to_uppercase();
+            query.push_str(&format!(", convert(value(position), '{exchange_upper}') as converted_value"));
+        }
+        (query, None, None)
     } else {
-        (
-            "SELECT MAX(date) as date, account, currency(units(position)) as symbol, SUM(units(position)) as quantity, cost_number as price, cost(SUM(position)) as cost, value(SUM(position)) as value".to_string(),
-            Some(vec![
-                "account",
-                "currency(units(position))",
-                "cost_number",
-                "cost_currency",
-            ]),
-            Some("HAVING SUM(number(units(position))) > 0".to_string()),
-        )
+        let mut query = "SELECT MAX(date) as date, account, currency(units(position)) as symbol, SUM(units(position)) as quantity, cost_number as price, cost(SUM(position)) as cost, value(SUM(position)) as value".to_string();
+        if opts.exchange.is_some() {
+            let exchange_upper = opts.exchange.as_ref().unwrap().to_uppercase();
+            query.push_str(&format!(", convert(value(SUM(position)), '{exchange_upper}') as converted_value"));
+        }
+        (query, Some(vec![
+            "account",
+            "currency(units(position))",
+            "cost_number",
+            "cost_currency",
+        ]), Some("HAVING SUM(number(units(position))) > 0".to_string()))
     };
 
     let mut query = select_clause;
@@ -194,6 +201,11 @@ fn build_query(opts: &LotsOptions) -> String {
 fn parse_rows(json_rows: &[Value]) -> Result<Vec<LotsRow>, Box<dyn std::error::Error>> {
     let mut rows = Vec::new();
     for row in json_rows {
+        let converted_value = if row.get("converted_value").is_some() {
+            Some(parse_amount(&row["converted_value"], "converted_value")?)
+        } else {
+            None
+        };
         rows.push(LotsRow {
             date: required_str(row, "date")?.to_string(),
             account: required_str(row, "account")?.to_string(),
@@ -202,6 +214,7 @@ fn parse_rows(json_rows: &[Value]) -> Result<Vec<LotsRow>, Box<dyn std::error::E
             price: parse_decimal_value(&row["price"], "price")?,
             cost: parse_amount(&row["cost"], "cost")?,
             value: parse_amount(&row["value"], "value")?,
+            converted_value,
         });
     }
     Ok(rows)
@@ -212,6 +225,11 @@ fn parse_average_rows(
 ) -> Result<Vec<AverageLotsRow>, Box<dyn std::error::Error>> {
     let mut rows = Vec::new();
     for row in json_rows {
+        let converted_value = if row.get("converted_value").is_some() {
+            Some(parse_amount(&row["converted_value"], "converted_value")?)
+        } else {
+            None
+        };
         rows.push(AverageLotsRow {
             date: required_str(row, "date")?.to_string(),
             account: required_str(row, "account")?.to_string(),
@@ -220,6 +238,7 @@ fn parse_average_rows(
             average_price: parse_decimal_value(&row["avg_price"], "avg_price")?,
             total_cost: parse_amount(&row["total_cost"], "total_cost")?,
             value: parse_amount(&row["value"], "value")?,
+            converted_value,
         });
     }
     Ok(rows)
@@ -303,10 +322,10 @@ fn format_amount_cell(amount: Decimal, currency: &str) -> String {
     format!("{} {}", format_decimal(amount), currency)
 }
 
-fn print_table(rows: &[LotsRow]) {
+fn print_table(rows: &[LotsRow], exchange: Option<&str>) {
     let mut table = Table::new();
     table.load_preset(presets::UTF8_FULL_CONDENSED);
-    table.set_header(vec![
+    let mut headers = vec![
         Cell::new("Date").set_alignment(CellAlignment::Left),
         Cell::new("Account").set_alignment(CellAlignment::Left),
         Cell::new("Quantity").set_alignment(CellAlignment::Right),
@@ -314,10 +333,14 @@ fn print_table(rows: &[LotsRow]) {
         Cell::new("Price").set_alignment(CellAlignment::Right),
         Cell::new("Cost").set_alignment(CellAlignment::Right),
         Cell::new("Value").set_alignment(CellAlignment::Right),
-    ]);
+    ];
+    if exchange.is_some() {
+        headers.push(Cell::new("Converted").set_alignment(CellAlignment::Right));
+    }
+    table.set_header(headers);
 
     for row in rows {
-        table.add_row(vec![
+        let mut cells = vec![
             Cell::new(&row.date).set_alignment(CellAlignment::Left),
             Cell::new(&row.account).set_alignment(CellAlignment::Left),
             Cell::new(format_quantity(&row.quantity)).set_alignment(CellAlignment::Right),
@@ -328,16 +351,27 @@ fn print_table(rows: &[LotsRow]) {
                 .set_alignment(CellAlignment::Right),
             Cell::new(format_amount_cell(row.value.amount, &row.value.currency))
                 .set_alignment(CellAlignment::Right),
-        ]);
+        ];
+        if let Some(exchange_currency) = exchange {
+            if let Some(ref converted) = row.converted_value {
+                cells.push(
+                    Cell::new(format_amount_cell(converted.amount, &converted.currency))
+                        .set_alignment(CellAlignment::Right),
+                );
+            } else {
+                cells.push(Cell::new("").set_alignment(CellAlignment::Right));
+            }
+        }
+        table.add_row(cells);
     }
 
     println!("{table}");
 }
 
-fn print_average_table(rows: &[AverageLotsRow]) {
+fn print_average_table(rows: &[AverageLotsRow], exchange: Option<&str>) {
     let mut table = Table::new();
     table.load_preset(presets::UTF8_FULL_CONDENSED);
-    table.set_header(vec![
+    let mut headers = vec![
         Cell::new("Date").set_alignment(CellAlignment::Left),
         Cell::new("Account").set_alignment(CellAlignment::Left),
         Cell::new("Quantity").set_alignment(CellAlignment::Right),
@@ -345,10 +379,14 @@ fn print_average_table(rows: &[AverageLotsRow]) {
         Cell::new("Average Price").set_alignment(CellAlignment::Right),
         Cell::new("Total Cost").set_alignment(CellAlignment::Right),
         Cell::new("Value").set_alignment(CellAlignment::Right),
-    ]);
+    ];
+    if exchange.is_some() {
+        headers.push(Cell::new("Converted").set_alignment(CellAlignment::Right));
+    }
+    table.set_header(headers);
 
     for row in rows {
-        table.add_row(vec![
+        let mut cells = vec![
             Cell::new(&row.date).set_alignment(CellAlignment::Left),
             Cell::new(&row.account).set_alignment(CellAlignment::Left),
             Cell::new(format_quantity(&row.quantity)).set_alignment(CellAlignment::Right),
@@ -365,7 +403,18 @@ fn print_average_table(rows: &[AverageLotsRow]) {
             .set_alignment(CellAlignment::Right),
             Cell::new(format_amount_cell(row.value.amount, &row.value.currency))
                 .set_alignment(CellAlignment::Right),
-        ]);
+        ];
+        if let Some(exchange_currency) = exchange {
+            if let Some(ref converted) = row.converted_value {
+                cells.push(
+                    Cell::new(format_amount_cell(converted.amount, &converted.currency))
+                        .set_alignment(CellAlignment::Right),
+                );
+            } else {
+                cells.push(Cell::new("").set_alignment(CellAlignment::Right));
+            }
+        }
+        table.add_row(cells);
     }
 
     println!("{table}");
@@ -401,5 +450,54 @@ mod tests {
             .contains("GROUP BY account, currency(units(position)), cost_number, cost_currency"));
         assert!(query.contains("HAVING SUM(number(units(position))) > 0"));
         assert!(query.contains("ORDER BY date ASC"));
+    }
+
+    #[test]
+    fn build_query_with_exchange_lowercase_is_capitalized() {
+        // Test for average mode
+        let opts = LotsOptions {
+            account: vec![],
+            begin: None,
+            end: None,
+            date_range: None,
+            amount: vec![],
+            currency: vec![],
+            exchange: Some("eur".to_string()),  // lowercase
+            sort: None,
+            limit: None,
+            no_pager: false,
+            sort_by: None,
+            average: true,
+            active: true,
+            show_all: false,
+            ledger: None,
+        };
+
+        let query = build_query(&opts);
+        assert!(query.contains("convert(value(SUM(position)), 'EUR')"));
+        assert!(!query.contains("convert(value(SUM(position)), 'eur')"));
+
+        // Test for show_all mode
+        let opts = LotsOptions {
+            account: vec![],
+            begin: None,
+            end: None,
+            date_range: None,
+            amount: vec![],
+            currency: vec![],
+            exchange: Some("usd".to_string()),  // lowercase
+            sort: None,
+            limit: None,
+            no_pager: false,
+            sort_by: None,
+            average: false,
+            active: false,
+            show_all: true,
+            ledger: None,
+        };
+
+        let query = build_query(&opts);
+        assert!(query.contains("convert(value(position), 'USD')"));
+        assert!(!query.contains("convert(value(position), 'usd')"));
     }
 }
