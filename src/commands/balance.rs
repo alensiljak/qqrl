@@ -74,10 +74,12 @@ pub fn run(opts: CommonOptions) -> Result<(), Box<dyn std::error::Error>> {
     };
 
     println!("\nYour BQL query is:\n{query}\n");
+    // Capitalize exchange value for display
+    let exchange_display = opts.exchange.as_ref().map(|s| s.to_uppercase());
     print_table(
         &balance_rows,
         grand_total.as_ref(),
-        opts.exchange.as_deref(),
+        exchange_display.as_deref(),
     );
     Ok(())
 }
@@ -138,8 +140,9 @@ fn build_query(opts: &CommonOptions) -> String {
     }
 
     let select_clause = if let Some(exchange) = &opts.exchange {
+        let exchange_upper = exchange.to_uppercase();
         format!(
-            "SELECT account, units(sum(position)) as Balance, sum(convert(position, '{exchange}')) as Converted"
+            "SELECT account, units(sum(position)) as Balance, sum(convert(position, '{exchange_upper}')) as Converted"
         )
     } else {
         "SELECT account, units(sum(position)) as Balance".to_string()
@@ -660,6 +663,33 @@ mod tests {
 
         assert!(q.contains("sum(convert(position, 'EUR')) as Converted"));
         assert!(!q.contains("convert(sum(position), 'EUR')"));
+    }
+
+    #[test]
+    fn build_query_with_exchange_lowercase_is_capitalized() {
+        let opts = CommonOptions {
+            account: vec![],
+            begin: None,
+            end: None,
+            date_range: None,
+            amount: vec![],
+            currency: vec![],
+            exchange: Some("eur".to_string()),  // lowercase
+            sort: None,
+            limit: None,
+            total: false,
+            no_pager: false,
+            hierarchy: false,
+            empty: false,
+            depth: None,
+            zero: false,
+            ledger: None,
+        };
+
+        let q = build_query(&opts);
+        // Should be capitalized in the query
+        assert!(q.contains("convert(position, 'EUR')"));
+        assert!(!q.contains("convert(position, 'eur')"));
     }
 
     #[test]

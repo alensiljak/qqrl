@@ -1,4 +1,4 @@
-# value()
+# value() -- FIXED ✅
 
 Used in `lots`.
 

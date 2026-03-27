@@ -384,6 +384,7 @@ mod tests {
             date_range: None,
             amount: vec![],
             currency: vec![],
+            exchange: None,
             sort: None,
             limit: None,
             no_pager: false,

@@ -37,7 +37,9 @@ pub fn run(opts: CommonOptions) -> Result<(), Box<dyn std::error::Error>> {
     let register_rows = parse_rows(&rows)?;
 
     println!("\nYour BQL query is:\n{query}\n");
-    print_table(&register_rows, opts.total, opts.exchange.as_deref());
+    // Capitalize exchange value for display
+    let exchange_display = opts.exchange.as_ref().map(|s| s.to_uppercase());
+    print_table(&register_rows, opts.total, exchange_display.as_deref());
     Ok(())
 }
 
@@ -108,8 +110,9 @@ fn build_query(opts: &CommonOptions) -> String {
     }
 
     let mut query = if let Some(exchange) = &opts.exchange {
+        let exchange_upper = exchange.to_uppercase();
         format!(
-            "SELECT date, account, payee, narration, position, convert(position, '{exchange}') as Converted"
+            "SELECT date, account, payee, narration, position, convert(position, '{exchange_upper}') as Converted"
         )
     } else {
         "SELECT date, account, payee, narration, position".to_string()
@@ -348,6 +351,33 @@ mod tests {
         assert_eq!(rows[0].narration, "Salary");
         assert_eq!(rows[0].currency, "EUR");
         assert_eq!(rows[0].amount, "1000".parse::<Decimal>().unwrap());
+    }
+
+    #[test]
+    fn build_query_with_exchange_lowercase_is_capitalized() {
+        let opts = CommonOptions {
+            account: vec![],
+            begin: None,
+            end: None,
+            date_range: None,
+            amount: vec![],
+            currency: vec![],
+            exchange: Some("usd".to_string()),  // lowercase
+            sort: None,
+            limit: None,
+            total: false,
+            no_pager: false,
+            hierarchy: false,
+            empty: false,
+            depth: None,
+            zero: false,
+            ledger: None,
+        };
+
+        let q = build_query(&opts);
+        // Should be capitalized in the query
+        assert!(q.contains("convert(position, 'USD')"));
+        assert!(!q.contains("convert(position, 'usd')"));
     }
 
     #[test]
