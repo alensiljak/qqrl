@@ -198,17 +198,19 @@ ledger2bql reg -X EUR
 ledger2bql query holidays
 ledger2bql query HOLIDAYS      # case-insensitive match
 ledger2bql query holi          # partial match
+ledger2bql query --list
 ledger2bql query --no-pager holidays
 ```
 
 | Feature                         | ledger2bql | qqrl | Notes                                   |
 |---------------------------------|------------|------|-----------------------------------------|
-| Exact name match                | ✓          | ☐    | `query` command still stubbed           |
-| Case-insensitive match          | ✓          | ☐    | `query` command still stubbed           |
-| Partial match                   | ✓          | ☐    | Falls back when no exact match          |
-| Results formatted as table      | ✓          | ☐    | `query` command still stubbed           |
+| Exact name match                | ✓          | ✓    |                                         |
+| Case-insensitive match          | ✓          | ✓    |                                         |
+| Partial match                   | ✓          | ✓    | Falls back when no exact match          |
+| Results formatted as table      | ✓          | ✓    |                                         |
+| `--list` flag                   | —          | ✓    | List all saved queries                  |
 | `--no-pager`                    | ✓          | ⚠️    | Pager not implemented (skipped)         |
-| Source: `.bean` file regex scan | —          | ☐    | Replaces `beancount.loader.load_file()` |
+| Source: `.bean` file regex scan | —          | ✓    | Replaces `beancount.loader.load_file()` |
 
 ---
 
