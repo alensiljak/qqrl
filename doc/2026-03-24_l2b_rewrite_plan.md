@@ -27,7 +27,7 @@ qqrl (Rust CLI — clap)
   ├─ spawn: rledger query -f json $LEDGER_FILE "QUERY"
   ├─ parse JSON response
   ├─ format_output()  (running totals, hierarchy, lot arithmetic, etc.)
-  └─ tabulate + pager → stdout
+  └─ tabulate → stdout  (pager skipped)
 ```
 
 `rledger` handles: ledger file parsing, BQL execution, all financial arithmetic.
@@ -71,7 +71,7 @@ All 6 commands from ledger2bql are carried over:
 | `price`  | `p`   | Price history                         |
 
 Common options (all commands): `--begin`, `--end`, `--date-range`, `--sort`, `--limit`,
-`--amount`, `--currency`, `--exchange`, `--total`, `--no-pager`
+`--amount`, `--currency`, `--exchange`, `--total`
 
 ### Configuration
 
@@ -212,7 +212,7 @@ Full rewrite. No intermediate Python step — go straight to Rust.
 #### Project setup
 
 - `cargo new qqrl`
-- Dependencies: `clap` (CLI), `serde_json` (JSON parsing), `dotenvy` (.env), `tabwriter` or `comfy-table` (tabulation), `minus` or exec `less` (pager)
+- Dependencies: `clap` (CLI), `serde_json` (JSON parsing), `dotenvy` (.env), `comfy-table` (tabulation)
 - `AGPL-3.0` license
 
 #### Core infrastructure
@@ -315,8 +315,7 @@ Current blocker details:
 | `clap`                       | CLI argument parsing                                |
 | `serde_json`                 | JSON parsing from rledger output                    |
 | `dotenvy`                    | .env file loading                                   |
-| `comfy-table` or `tabwriter` | Output tabulation                                   |
-| `minus`                      | Pager (or just exec `less`)                         |
+| `comfy-table`                | Output tabulation                                   |
 | `regex`                      | Account pattern matching, .bean file query scanning |
 | `rust_decimal`               | Decimal arithmetic for running totals, lots         |
 | `chrono`                     | Date parsing and arithmetic                         |

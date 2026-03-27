@@ -58,7 +58,7 @@ diff e.norm.txt a.norm.txt
 | `--currency (multi)`  | `-c`  | ✓          | ✓    | `-c EUR,BAM`                 |
 | `--exchange CURR`     | `-X`  | ✓          | ✓    | `-X EUR`                     |
 | `--total`             | `-T`  | ✓          | ✓    | Not supported by `lots`      |
-| `--no-pager`          | —     | ✓          | ☐    |                              |
+| `--no-pager`          | —     | ✓          | ⚠️    | Pager not implemented (skipped) |
 
 ---
 
@@ -146,7 +146,7 @@ ledger2bql bal -X EUR
 | `--sort` / `-S`           | ✓          | ✓    |                                        |
 | `--limit`                 | ✓          | ✓    |                                        |
 | `--exchange` / `-X`       | ✓          | ✓    | Uses `sum(convert(position, CURR))`    |
-| `--no-pager`              | ✓          | ☐    |                                        |
+| `--no-pager`              | ✓          | ⚠️    | Pager not implemented (skipped)        |
 
 ---
 
@@ -186,7 +186,7 @@ ledger2bql reg -X EUR
 | `--limit`                      | ✓          | ✓    |                                         |
 | `--exchange` / `-X`            | ✓          | ✓    | Uses `convert(position, CURR)`           |
 | Multi-currency running totals  | ✓          | ✓    | Tracks each currency separately         |
-| `--no-pager`                   | ✓          | ☐    |                                         |
+| `--no-pager`                   | ✓          | ⚠️    | Pager not implemented (skipped)         |
 
 ---
 
@@ -207,7 +207,7 @@ ledger2bql query --no-pager holidays
 | Case-insensitive match          | ✓          | ☐    | `query` command still stubbed           |
 | Partial match                   | ✓          | ☐    | Falls back when no exact match          |
 | Results formatted as table      | ✓          | ☐    | `query` command still stubbed           |
-| `--no-pager`                    | ✓          | ☐    |                                         |
+| `--no-pager`                    | ✓          | ⚠️    | Pager not implemented (skipped)         |
 | Source: `.bean` file regex scan | —          | ☐    | Replaces `beancount.loader.load_file()` |
 
 ---
@@ -243,7 +243,7 @@ ledger2bql lots -c EUR
 | `cost(position)` column    | ✓          | ✓    |                                  |
 | `value(position)` column   | ✓          | ✓    | Fixed in rledger 2026-03-27      |
 | `cost_number` column       | ✓          | ✓    | Used for price / average cost    |
-| `--no-pager`               | ✓          | ☐    |                                  |
+| `--no-pager`               | ✓          | ⚠️    | Pager not implemented (skipped)  |
 
 ---
 
@@ -265,7 +265,7 @@ ledger2bql assert -c EUR
 | Date filter               | ✓          | ☐    |                                              |
 | Currency filter           | ✓          | ☐    |                                              |
 | Source: `#balances` table | ✓          | ☐    | ⚠️ Phase 0 — rledger may use different syntax |
-| `--no-pager`              | ✓          | ☐    |                                              |
+| `--no-pager`              | ✓          | ⚠️    | Pager not implemented (skipped)               |
 
 ---
 
@@ -289,7 +289,7 @@ ledger2bql price -c USD
 | Date filter             | ✓          | ☐    |                                              |
 | Currency filter         | ✓          | ☐    |                                              |
 | Source: `#prices` table | ✓          | ☐    | ⚠️ Phase 0 — rledger may use different syntax |
-| `--no-pager`            | ✓          | ☐    |                                              |
+| `--no-pager`            | ✓          | ⚠️    | Pager not implemented (skipped)               |
 
 ---
 
