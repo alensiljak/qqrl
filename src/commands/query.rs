@@ -22,8 +22,15 @@ struct QueryEntry {
 ///   qqrl query QUERY_NAME
 ///   qqrl q holidays
 ///   qqrl query my-custom-report
+///   qqrl query --list
 pub fn run(opts: CommonOptions) -> Result<(), Box<dyn std::error::Error>> {
     let config = Config::load(opts.ledger.clone())?;
+
+    // Handle --list flag
+    if opts.list {
+        list_queries(&config.ledger_file)?;
+        return Ok(());
+    }
 
     // Parse query name argument (first positional argument)
     let query_name = if opts.account.is_empty() {
@@ -246,6 +253,42 @@ fn print_table(headers: &[String], rows: &[Vec<String>]) {
     }
 
     println!("\n{}", table);
+}
+
+/// List all saved queries in a table format
+fn list_queries(ledger_path: &std::path::Path) -> Result<(), Box<dyn std::error::Error>> {
+    let queries = parse_ledger_queries(ledger_path)?;
+    
+    if queries.is_empty() {
+        println!("No saved queries found in the ledger file.");
+        return Ok(());
+    }
+
+    let mut table = Table::new();
+    table.load_preset(UTF8_FULL_CONDENSED);
+
+    // Set headers
+    table.set_header(vec![
+        Cell::new("Name").set_alignment(CellAlignment::Center),
+        Cell::new("Query (first 50 chars)").set_alignment(CellAlignment::Center),
+    ]);
+
+    // Add rows
+    for entry in queries {
+        let truncated = if entry.query_string.len() > 50 {
+            format!("{}...", &entry.query_string[..50])
+        } else {
+            entry.query_string
+        };
+        table.add_row(vec![
+            Cell::new(entry.name).set_alignment(CellAlignment::Left),
+            Cell::new(truncated).set_alignment(CellAlignment::Left),
+        ]);
+    }
+
+    println!("\n{}", table);
+    
+    Ok(())
 }
 
 #[cfg(test)]

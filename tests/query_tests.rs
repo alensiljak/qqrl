@@ -80,3 +80,50 @@ fn query_missing_argument() {
         "error should indicate missing argument, got: {combined}"
     );
 }
+
+#[test]
+fn query_list_queries() {
+    let output = Command::new(qqrl_bin())
+        .arg("query")
+        .arg("--list")
+        .arg("--ledger")
+        .arg(ledger_path())
+        .output()
+        .expect("failed to run qqrl query --list");
+
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    let code = output.status.code().unwrap_or(-1);
+
+    assert_eq!(code, 0, "query --list should succeed: {stderr}");
+    assert!(stdout.contains("holidays"));
+    assert!(stdout.contains("select * where payee ~ 'holida"));
+    assert!(stdout.contains("Name"));
+    assert!(stdout.contains("Query (first 50 chars)"));
+}
+
+#[test]
+fn query_list_empty_ledger() {
+    // Create an empty temporary ledger
+    let temp_dir = std::env::temp_dir();
+    let temp_path = temp_dir.join("empty_ledger.bean");
+    std::fs::write(&temp_path, "").unwrap();
+
+    let output = Command::new(qqrl_bin())
+        .arg("query")
+        .arg("--list")
+        .arg("--ledger")
+        .arg(&temp_path)
+        .output()
+        .expect("failed to run qqrl query --list");
+
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    let code = output.status.code().unwrap_or(-1);
+
+    assert_eq!(code, 0, "query --list should succeed on empty ledger: {stderr}");
+    assert!(stdout.contains("No saved queries found"));
+
+    // Cleanup
+    let _ = std::fs::remove_file(&temp_path);
+}

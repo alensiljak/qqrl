@@ -372,6 +372,7 @@ mod tests {
             depth: None,
             zero: false,
             ledger: None,
+            list: false,
         };
 
         let q = build_query(&opts);

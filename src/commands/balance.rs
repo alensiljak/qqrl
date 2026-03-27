@@ -580,6 +580,7 @@ mod tests {
             depth: None,
             zero: false,
             ledger: None,
+            list: false,
         };
         let q = build_query(&opts);
         assert!(q.contains("SELECT account, units(sum(position)) as Balance"));
@@ -607,6 +608,7 @@ mod tests {
             depth: None,
             zero: false,
             ledger: None,
+            list: false,
         };
         let q = build_query(&opts);
         assert!(q.contains("account ~ 'Assets'"));
@@ -632,6 +634,7 @@ mod tests {
             depth: None,
             zero: false,
             ledger: None,
+            list: false,
         };
         let q = build_query(&opts);
         assert!(q.contains("date >= date(\"2025-01-01\")"));
@@ -657,6 +660,7 @@ mod tests {
             depth: None,
             zero: false,
             ledger: None,
+            list: false,
         };
 
         let q = build_query(&opts);
@@ -684,6 +688,7 @@ mod tests {
             depth: None,
             zero: false,
             ledger: None,
+            list: false,
         };
 
         let q = build_query(&opts);
@@ -711,6 +716,7 @@ mod tests {
             depth: None,
             zero: false,
             ledger: None,
+            list: false,
         };
         let q = build_query(&opts);
         assert!(q.contains("ORDER BY account DESC"));

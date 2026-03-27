@@ -29,6 +29,29 @@ Run tests:
 cargo tests
 ```
 
+## Usage
+
+### Query command
+
+Execute saved queries from your ledger file:
+
+```sh
+qqrl query QUERY_NAME
+qqrl q holidays
+```
+
+List all available saved queries:
+
+```sh
+qqrl query --list
+```
+
+See all options:
+
+```sh
+qqrl query --help
+```
+
 ## Links
 
 - Ledger2Bql [repo](https://github.com/alensiljak/ledger2bql)

@@ -42,7 +42,7 @@ pub enum Command {
 }
 
 /// Options shared by all commands (except query)
-#[derive(Debug, Parser)]
+#[derive(Debug, Parser, Default)]
 pub struct CommonOptions {
     /// Account pattern(s) to filter (supports multiple: 'Assets not Bank @Employer')
     #[arg(value_name = "PATTERN", num_args = 0..)]
@@ -98,6 +98,10 @@ pub struct CommonOptions {
     /// Include empty accounts (balance command only)
     #[arg(long)]
     pub empty: bool,
+
+    /// List all saved queries (query command only)
+    #[arg(long, default_value_t = false)]
+    pub list: bool,
 
     /// Limit account tree depth (balance command only)
     #[arg(short = 'D', long)]
