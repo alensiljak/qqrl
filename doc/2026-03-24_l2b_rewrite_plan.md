@@ -209,13 +209,15 @@ When `rledger` exposes a stable `value(...)` query shape for lots, extend `qqrl 
 
 Full rewrite. No intermediate Python step — go straight to Rust.
 
-**Project setup**
+#### Project setup
 
 - `cargo new qqrl`
 - Dependencies: `clap` (CLI), `serde_json` (JSON parsing), `dotenvy` (.env), `tabwriter` or `comfy-table` (tabulation), `minus` or exec `less` (pager)
 - `AGPL-3.0` license
 
-**Core infrastructure** (start here, everything else depends on it)
+#### Core infrastructure
+
+(start here, everything else depends on it)
 
 1. `src/config.rs` — resolve `LEDGER_FILE`, `RLEDGER_BIN`, `.env` loading
 2. `src/runner.rs` — `run_bql_query(query: &str) -> Result<Vec<serde_json::Value>>` — spawns `rledger query -f json`, captures stdout, parses JSON, maps errors
@@ -223,7 +225,9 @@ Full rewrite. No intermediate Python step — go straight to Rust.
 4. `src/utils.rs` — port of common utils: `parse_account_pattern()`, `parse_amount_filter()`, `parse_account_params()`
 5. `src/cli.rs` — clap command definitions, shared options struct
 
-**Commands** (can be worked in parallel after infrastructure is done)
+#### Migrate Commands
+
+(can be worked in parallel after infrastructure is done)
 
 6. `src/commands/balance.rs` — `parse_query()` + `format_output()` including `--hierarchy` mode
 7. `src/commands/register.rs` — `parse_query()` + `format_output()` with running totals
@@ -264,13 +268,13 @@ Current blocker details:
 - `value(SUM(position))` returns an inventory-like structure in current testing rather than a directly displayable market-value amount
 - until that behavior is fixed or clarified upstream, `lots` uses `price` and `cost` columns only
 
-**Tests**
+## Tests
 
 - Port the existing pytest suite to Rust integration tests
 - Each test: build expected BQL query → run against `sample-ledger.bean` via rledger → assert formatted output
 - Use the same `tests/sample-ledger.bean` data file
 
-**Release**
+## Release
 
 - `cargo build --release`
 - Cross-compile for Termux: `CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=... cargo build --release --target aarch64-unknown-linux-gnu`

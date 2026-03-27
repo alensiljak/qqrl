@@ -228,22 +228,22 @@ ledger2bql lots -b 2025-04-01
 ledger2bql lots -c EUR
 ```
 
-| Feature                    | ledger2bql | qqrl | Notes                     |
-|----------------------------|------------|------|---------------------------|
-| Active lots (default)      | ✓          | ✓    | HAVING SUM(units) > 0     |
-| All lots (`--all`)         | ✓          | ✓    | Includes sold lots        |
-| Average cost (`--average`) | ✓          | ✓    | GROUP BY account+currency |
-| Detailed lots              | ✓          | △    | Per-lot date, price, cost; value questionable |
-| `--sort-by date`           | ✓          | ✓    |                           |
-| `--sort-by price`          | ✓          | ✓    |                           |
-| `--sort-by symbol`         | ✓          | ✓    |                           |
-| Account filter             | ✓          | ✓    |                           |
-| `--begin` / `--end`        | ✓          | ✓    |                           |
-| `--currency`               | ✓          | ✓    |                           |
-| `cost(position)` column    | ✓          | ✓    |                           |
-| `value(position)` column   | ✓          | ☐    | Blocked by current `rledger` value behavior |
-| `cost_number` column       | ✓          | ✓    | Used for price / average cost |
-| `--no-pager`               | ✓          | ☐    |                           |
+| Feature                    | ledger2bql | qqrl | Notes                            |
+|----------------------------|------------|------|----------------------------------|
+| Active lots (default)      | ✓          | ✓    | HAVING SUM(units) > 0            |
+| All lots (`--all`)         | ✓          | ✓    | Includes sold lots               |
+| Average cost (`--average`) | ✓          | ✓    | GROUP BY account+currency        |
+| Detailed lots              | ✓          | ✓    | Per-lot date, price, cost; value |
+| `--sort-by date`           | ✓          | ✓    |                                  |
+| `--sort-by price`          | ✓          | ✓    |                                  |
+| `--sort-by symbol`         | ✓          | ✓    |                                  |
+| Account filter             | ✓          | ✓    |                                  |
+| `--begin` / `--end`        | ✓          | ✓    |                                  |
+| `--currency`               | ✓          | ✓    |                                  |
+| `cost(position)` column    | ✓          | ✓    |                                  |
+| `value(position)` column   | ✓          | ✓    | Fixed in rledger 2026-03-27      |
+| `cost_number` column       | ✓          | ✓    | Used for price / average cost    |
+| `--no-pager`               | ✓          | ☐    |                                  |
 
 ---
 
@@ -305,7 +305,7 @@ rledger query -f json tests/sample-ledger.bean "QUERY"
 |----------------------------|--------------------------------|---------------------------------------------------------------------|--------|
 | `convert(position, 'EUR')` | `bal`, `reg` with `--exchange` | `SELECT account, sum(convert(position, 'EUR')) GROUP BY account`    | ✓      |
 | `convert(sum(position), 'EUR')` | direct aggregate conversion | `SELECT account, convert(sum(position), 'EUR') GROUP BY account` | ✗ |
-| `value(position)`          | `lots`                         | `SELECT account, value(SUM(position)) GROUP BY account`             | △      |
+| `value(position)`          | `lots`                         | `SELECT account, value(SUM(position)) GROUP BY account`             | ✓      |
 | `cost_number`              | `lots`                         | `SELECT account, cost_number WHERE cost_number IS NOT NULL LIMIT 5` | ✓      |
 | `#balances` system table   | `assert`                       | `SELECT date, account, amount FROM #balances`                       | ☐      |
 | `#prices` system table     | `price`                        | `SELECT date, currency, amount FROM #prices`                        | ☐      |
