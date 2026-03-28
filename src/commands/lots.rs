@@ -49,9 +49,8 @@ struct AverageLotsRow {
 pub fn run(opts: LotsOptions) -> Result<(), Box<dyn std::error::Error>> {
     let config = Config::load(opts.ledger.clone())?;
     let query = build_query(&opts);
-    let rows = run_bql_query(&config, &query)?;
-
     println!("\nYour BQL query is:\n{query}\n");
+    let rows = run_bql_query(&config, &query)?;
     if opts.average {
         let average_rows = parse_average_rows(&rows)?;
         let exchange_display = opts.exchange.as_ref().map(|s| s.to_uppercase());
@@ -121,8 +120,8 @@ fn build_query(opts: &LotsOptions) -> String {
     if currencies.len() == 1 {
         where_clauses.push(format!("currency = '{}'", currencies[0]));
     } else if currencies.len() > 1 {
-        let list = currencies.join("', '");
-        where_clauses.push(format!("currency IN ('{list}')"));
+        let conditions: Vec<String> = currencies.iter().map(|c| format!("currency = '{c}'")).collect();
+        where_clauses.push(format!("({})", conditions.join(" OR ")));
     }
 
     where_clauses.push("cost_number IS NOT NULL".to_string());
@@ -563,8 +562,9 @@ mod tests {
         };
 
         let query = build_query(&opts);
-        assert!(query.contains("currency IN ('USD', 'GBP')"));
-        assert!(!query.contains("currency IN ('usd', 'gbp')"));
+        assert!(query.contains("currency = 'USD' OR currency = 'GBP'"));
+        assert!(!query.contains("currency = 'usd'"));
+        assert!(!query.contains("currency = 'gbp'"));
     }
 
     #[test]

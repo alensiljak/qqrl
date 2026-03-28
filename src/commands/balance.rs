@@ -35,6 +35,7 @@ struct BalanceTotals {
 pub fn run(opts: CommonOptions) -> Result<(), Box<dyn std::error::Error>> {
     let config = Config::load(opts.ledger.clone())?;
     let query = build_query(&opts);
+    println!("\nYour BQL query is:\n{query}\n");
     let rows = run_bql_query(&config, &query)?;
 
     let mut balance_rows = parse_rows(&rows)?;
@@ -73,7 +74,6 @@ pub fn run(opts: CommonOptions) -> Result<(), Box<dyn std::error::Error>> {
         None
     };
 
-    println!("\nYour BQL query is:\n{query}\n");
     // Capitalize exchange value for display
     let exchange_display = opts.exchange.as_ref().map(|s| s.to_uppercase());
     print_table(
@@ -136,8 +136,8 @@ fn build_query(opts: &CommonOptions) -> String {
     if currencies.len() == 1 {
         where_clauses.push(format!("currency = '{}'", currencies[0]));
     } else if currencies.len() > 1 {
-        let list = currencies.join("', '");
-        where_clauses.push(format!("currency IN ('{list}')"));
+        let conditions: Vec<String> = currencies.iter().map(|c| format!("currency = '{c}'")).collect();
+        where_clauses.push(format!("({})", conditions.join(" OR ")));
     }
 
     let select_clause = if let Some(exchange) = &opts.exchange {
@@ -747,8 +747,9 @@ mod tests {
         };
 
         let q = build_query(&opts);
-        assert!(q.contains("currency IN ('EUR', 'USD')"));
-        assert!(!q.contains("currency IN ('eur', 'usd')"));
+        assert!(q.contains("currency = 'EUR' OR currency = 'USD'"));
+        assert!(!q.contains("currency = 'eur'"));
+        assert!(!q.contains("currency = 'usd'"));
     }
 
     #[test]
