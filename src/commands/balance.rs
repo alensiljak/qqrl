@@ -126,10 +126,11 @@ fn build_query(opts: &CommonOptions) -> String {
     }
 
     // Currency filter — split comma-separated values, support -c EUR -c USD
+    // Convert to uppercase for case-insensitive matching
     let currencies: Vec<String> = opts
         .currency
         .iter()
-        .flat_map(|c| c.split(',').map(|s| s.trim().to_string()))
+        .flat_map(|c| c.split(',').map(|s| s.trim().to_uppercase()))
         .filter(|s| !s.is_empty())
         .collect();
     if currencies.len() == 1 {
@@ -695,6 +696,59 @@ mod tests {
         // Should be capitalized in the query
         assert!(q.contains("convert(position, 'EUR')"));
         assert!(!q.contains("convert(position, 'eur')"));
+    }
+
+    #[test]
+    fn build_query_with_currency_lowercase_is_capitalized() {
+        let opts = CommonOptions {
+            account: vec![],
+            begin: None,
+            end: None,
+            date_range: None,
+            amount: vec![],
+            currency: vec!["eur".to_string()],  // lowercase single currency
+            exchange: None,
+            sort: None,
+            limit: None,
+            total: false,
+            no_pager: false,
+            hierarchy: false,
+            empty: false,
+            depth: None,
+            zero: false,
+            ledger: None,
+            list: false,
+        };
+
+        let q = build_query(&opts);
+        // Should be capitalized in the query
+        assert!(q.contains("currency = 'EUR'"));
+        assert!(!q.contains("currency = 'eur'"));
+
+        // Test with multiple currencies, some lowercase
+        let opts = CommonOptions {
+            account: vec![],
+            begin: None,
+            end: None,
+            date_range: None,
+            amount: vec![],
+            currency: vec!["eur,usd".to_string()],  // comma-separated lowercase
+            exchange: None,
+            sort: None,
+            limit: None,
+            total: false,
+            no_pager: false,
+            hierarchy: false,
+            empty: false,
+            depth: None,
+            zero: false,
+            ledger: None,
+            list: false,
+        };
+
+        let q = build_query(&opts);
+        assert!(q.contains("currency IN ('EUR', 'USD')"));
+        assert!(!q.contains("currency IN ('eur', 'usd')"));
     }
 
     #[test]

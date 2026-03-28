@@ -115,7 +115,7 @@ fn build_query(opts: &LotsOptions) -> String {
     let currencies: Vec<String> = opts
         .currency
         .iter()
-        .flat_map(|c| c.split(',').map(|part| part.trim().to_string()))
+        .flat_map(|c| c.split(',').map(|part| part.trim().to_uppercase()))
         .filter(|c| !c.is_empty())
         .collect();
     if currencies.len() == 1 {
@@ -514,6 +514,57 @@ mod tests {
         let query = build_query(&opts);
         assert!(query.contains("convert(value(position), 'USD')"));
         assert!(!query.contains("convert(value(position), 'usd')"));
+    }
+
+    #[test]
+    fn build_query_with_currency_lowercase_is_capitalized() {
+        // Test with single lowercase currency
+        let opts = LotsOptions {
+            account: vec![],
+            begin: None,
+            end: None,
+            date_range: None,
+            amount: vec![],
+            currency: vec!["eur".to_string()],  // lowercase
+            exchange: None,
+            sort: None,
+            limit: None,
+            no_pager: false,
+            sort_by: None,
+            average: false,
+            active: true,
+            show_all: false,
+            closed: false,
+            ledger: None,
+        };
+
+        let query = build_query(&opts);
+        assert!(query.contains("currency = 'EUR'"));
+        assert!(!query.contains("currency = 'eur'"));
+
+        // Test with multiple currencies mixed case
+        let opts = LotsOptions {
+            account: vec![],
+            begin: None,
+            end: None,
+            date_range: None,
+            amount: vec![],
+            currency: vec!["usd,gbp".to_string()],  // lowercase
+            exchange: None,
+            sort: None,
+            limit: None,
+            no_pager: false,
+            sort_by: None,
+            average: false,
+            active: true,
+            show_all: false,
+            closed: false,
+            ledger: None,
+        };
+
+        let query = build_query(&opts);
+        assert!(query.contains("currency IN ('USD', 'GBP')"));
+        assert!(!query.contains("currency IN ('usd', 'gbp')"));
     }
 
     #[test]
