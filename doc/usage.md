@@ -246,21 +246,51 @@ qqrl assert --date 2025-12-31
 
 ### Price (`p`)
 
-Display price history.
+Display commodity price history.
 
-**⚠️  Status: BLOCKED**
-
-This command requires `rledger` to support the `#prices` system table. It is not yet available.
-
-**Pending feature request:** https://github.com/rustledger/rustledger/issues/...
-
-**Usage:**
+**Examples:**
 
 ```sh
-qqrl price [COMMODITY] [OPTIONS]
+# Show all price entries
+qqrl price
+
+# Filter by commodity
 qqrl p EUR
-qqrl price --begin 2025-01-01 USD
+qqrl price AAPL
+
+# Filter by multiple commodities (OR logic)
+qqrl price EUR USD
+
+# Filter by the currency prices are expressed in
+qqrl price -c USD
+
+# Show prices in a date range
+qqrl price --begin 2025-01-01 --end 2026-01-01 EUR
+
+# Sort by date descending
+qqrl price -S -date
+
+# Most recent 20 EUR prices
+qqrl price EUR -S -date --limit 20
 ```
+
+**Output columns:**
+
+| Column | Description |
+|--------|-------------|
+| Date | Date the price was recorded |
+| Commodity | The commodity being priced (e.g. `EUR`, `AAPL`) |
+| Price | The price amount and its currency (e.g. `1.0523 USD`) |
+
+**How it works:**
+
+The price command queries the `prices` table directly:
+
+```sql
+SELECT date, currency, amount FROM #prices [WHERE ...] ORDER BY date, currency
+```
+
+Commodity arguments (positional) filter on the `currency` column of the prices table using regex matching. The `-c` flag filters on the currency the price is *expressed in* (applied client-side after the query).
 
 ## Account Pattern Matching
 
@@ -400,7 +430,7 @@ export RLEDGER_BIN=/custom/path/to/rledger
 ### Command-specific issues
 
 - **Lots market value missing:** The `value()` function in `rledger` may not return usable data yet. This is a known limitation. See [Compatibility Report](COMPATIBILITY.md).
-- **Assert/Price commands blocked:** These require `#balances` and `#prices` system tables which are not yet supported in `rledger`. Track the upstream issue for updates.
+- **Assert command blocked:** This requires the `#balances` system table which is not yet supported in `rledger`. Track the upstream issue for updates.
 
 ## Links
 
