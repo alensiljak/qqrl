@@ -7,6 +7,7 @@ use crate::{
     config::Config,
     date_parser::{parse_date, parse_date_range},
     runner::run_bql_query,
+    utils::parse_amount_filter,
 };
 
 #[derive(Debug, Clone)]
@@ -90,12 +91,24 @@ fn build_query(opts: &CommonOptions) -> String {
         }
     }
 
+    // Amount filters (e.g. -a ">1.2" or -a ">1.2EUR")
+    for amount_str in &opts.amount {
+        if let Ok(filter) = parse_amount_filter(amount_str) {
+            let mut clause = format!("amount.number {} {}", filter.operator, filter.value);
+            if let Some(cur) = &filter.currency {
+                clause.push_str(&format!(" AND amount.currency = '{cur}'"));
+            }
+            where_clauses.push(clause);
+        }
+    }
+
     let mut query = "SELECT date, currency, amount FROM #prices".to_string();
     if !where_clauses.is_empty() {
         query.push_str(&format!(" WHERE {}", where_clauses.join(" AND ")));
     }
 
     // Sort: explicit -S flag overrides the default (date, then commodity name).
+    // Friendly names like "symbol" and "price" are mapped to BQL column names.
     if let Some(sort_str) = &opts.sort {
         let sort_clause: Vec<String> = sort_str
             .split(',')
@@ -106,7 +119,12 @@ fn build_query(opts: &CommonOptions) -> String {
                 } else {
                     (field, "ASC")
                 };
-                format!("{name} {dir}")
+                let mapped = match name {
+                    "symbol" => "currency",
+                    "price" | "amount" => "amount",
+                    other => other,
+                };
+                format!("{mapped} {dir}")
             })
             .collect();
         query.push_str(&format!(" ORDER BY {}", sort_clause.join(", ")));
@@ -303,6 +321,36 @@ mod tests {
             format_price("1.0523".parse().unwrap(), "USD"),
             "1.0523 USD"
         );
+    }
+
+    #[test]
+    fn build_query_amount_filter() {
+        let opts = CommonOptions {
+            amount: vec![">1.2".to_string()],
+            ..default_opts()
+        };
+        let q = build_query(&opts);
+        assert!(q.contains("amount.number > 1.2"));
+    }
+
+    #[test]
+    fn build_query_amount_filter_with_currency() {
+        let opts = CommonOptions {
+            amount: vec![">1.2EUR".to_string()],
+            ..default_opts()
+        };
+        let q = build_query(&opts);
+        assert!(q.contains("amount.number > 1.2 AND amount.currency = 'EUR'"));
+    }
+
+    #[test]
+    fn build_query_sort_friendly_names() {
+        let opts = CommonOptions {
+            sort: Some("symbol,-price".to_string()),
+            ..default_opts()
+        };
+        let q = build_query(&opts);
+        assert!(q.contains("ORDER BY currency ASC, amount DESC"));
     }
 
     #[test]
