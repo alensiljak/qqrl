@@ -143,7 +143,7 @@ fn build_query(opts: &CommonOptions) -> String {
     let select_clause = if let Some(exchange) = &opts.exchange {
         let exchange_upper = exchange.to_uppercase();
         format!(
-            "SELECT account, units(sum(position)) as Balance, sum(convert(position, '{exchange_upper}')) as Converted"
+            "SELECT account, units(sum(position)) as Balance, convert(sum(position), '{exchange_upper}') as Converted"
         )
     } else {
         "SELECT account, units(sum(position)) as Balance".to_string()
@@ -200,7 +200,7 @@ fn parse_rows(json_rows: &[Value]) -> Result<Vec<BalanceRow>, Box<dyn std::error
         let positions = parse_inventory_positions(&row["Balance"], "Balance")?;
         let converted_positions = row
             .get("Converted")
-            .map(|value| parse_inventory_positions(value, "Converted"))
+            .map(|value| parse_amount_as_positions(value, "Converted"))
             .transpose()?;
 
         rows.push(BalanceRow {
@@ -210,6 +210,25 @@ fn parse_rows(json_rows: &[Value]) -> Result<Vec<BalanceRow>, Box<dyn std::error
         });
     }
     Ok(rows)
+}
+
+/// Parse a single Amount value (from `convert(sum(...))`) as a one-element positions vec.
+/// JSON shape: `{"currency": "EUR", "number": "3194.1000"}`
+fn parse_amount_as_positions(
+    value: &Value,
+    label: &str,
+) -> Result<Vec<Position>, Box<dyn std::error::Error>> {
+    let currency = value["currency"]
+        .as_str()
+        .ok_or_else(|| format!("missing currency in {label}"))?
+        .to_string();
+    let number_str = value["number"]
+        .as_str()
+        .ok_or_else(|| format!("missing number in {label}"))?;
+    let amount = number_str
+        .parse::<Decimal>()
+        .map_err(|_| format!("invalid decimal in {label}: {number_str}"))?;
+    Ok(vec![Position { currency, amount }])
 }
 
 fn parse_inventory_positions(
@@ -643,7 +662,7 @@ mod tests {
     }
 
     #[test]
-    fn build_query_with_exchange_uses_sum_of_converted_positions() {
+    fn build_query_with_exchange_uses_convert_of_sum() {
         let opts = CommonOptions {
             account: vec!["Assets:Bank:Bank03581".to_string()],
             begin: None,
@@ -666,8 +685,8 @@ mod tests {
 
         let q = build_query(&opts);
 
-        assert!(q.contains("sum(convert(position, 'EUR')) as Converted"));
-        assert!(!q.contains("convert(sum(position), 'EUR')"));
+        assert!(q.contains("convert(sum(position), 'EUR') as Converted"));
+        assert!(!q.contains("sum(convert(position, 'EUR')"));
     }
 
     #[test]
@@ -694,8 +713,8 @@ mod tests {
 
         let q = build_query(&opts);
         // Should be capitalized in the query
-        assert!(q.contains("convert(position, 'EUR')"));
-        assert!(!q.contains("convert(position, 'eur')"));
+        assert!(q.contains("convert(sum(position), 'EUR')"));
+        assert!(!q.contains("'eur'"));
     }
 
     #[test]

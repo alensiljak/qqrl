@@ -71,15 +71,16 @@ fn rledger_supports_sum_of_converted_positions() {
 }
 
 #[test]
-fn rledger_rejects_convert_of_summed_positions() {
-    let (_stdout, stderr, code) = run_rledger_query(
+fn rledger_supports_convert_of_summed_positions() {
+    let (stdout, stderr, code) = run_rledger_query(
         "SELECT account, convert(sum(position), 'EUR') WHERE account = 'Assets:Bank:Bank03581' GROUP BY account",
     );
 
-    assert_ne!(code, 0, "convert(sum(position), ...) should currently fail");
+    assert_eq!(code, 0, "convert(sum(position), ...) should now work: {stderr}");
+    assert!(stdout.contains("Assets:Bank:Bank03581"));
     assert!(
-        stderr.contains("unknown function: convert"),
-        "stderr should reflect the rejected query shape, got: {stderr}"
+        contains_any(&stdout, &["3,194.1000 EUR", "3194.1000 EUR"]),
+        "converted result should be returned in EUR, got: {stdout}"
     );
 }
 
