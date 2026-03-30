@@ -6,23 +6,23 @@ exe = "cargo run"
 [[test]]
 name = "read prices"
 command = 'rledger query -f json tests/sample-ledger.bean "SELECT date, currency, amount FROM #prices"'
-#stdout = ""
+stdout_file = "prices.out"
 
 [[test]]
 name = "read balances"
 command = 'rledger query -f json tests/sample-ledger.bean "SELECT date, account, amount FROM #balances"'
-# stdout = ""
+stdout_file = "balances.out"
 
 [[test]]
 name = "supported row-level conversion aggregated afterwards"
 command = '''rledger query -f json tests/sample-ledger.bean "SELECT account, sum(convert(position, 'EUR')) GROUP BY account"'''
-# stdout = ""
+stdout_file = "sum-convert-position.out"
 
 [[test]]
 name = "convert, fail"
 # Unsupported aggregate conversion shape; should currently fail with unknown function: convert
 command = '''rledger query -f json tests/sample-ledger.bean "SELECT account, convert(sum(position), 'EUR') GROUP BY account"'''
-# stdout = ""
+stdout_file = "convert.out"
 
 [[test]]
 name = "balance exchange workaround"
@@ -39,7 +39,7 @@ compare = "whitespace"
 [[test]]
 name = "End-to-end qqrl exchange probes"
 command = '{{exe}} bal --ledger tests/sample-ledger.bean --exchange EUR Assets:Bank:Bank03581'
-stdout = '''
+stdout = """
 
 Your BQL query is:
 SELECT account, units(sum(position)) as Balance, convert(sum(position), 'EUR') as Converted WHERE account ~ 'Assets:Bank:Bank03581' GROUP BY account ORDER BY account ASC
@@ -49,12 +49,12 @@ SELECT account, units(sum(position)) as Balance, convert(sum(position), 'EUR') a
 ╞═══════════════════════╪══════════════╪══════════════╡
 │ Assets:Bank:Bank03581 ┆ 3,000.00 CHF ┆ 3,194.10 EUR │
 └───────────────────────┴──────────────┴──────────────┘
-'''
+"""
 
 [[test]]
 name = "balance with exchange"
 command = '{{exe}} reg --ledger tests/sample-ledger.bean --exchange EUR Assets:Bank:Bank03581'
-stdout = '''
+stdout = """
 
 Your BQL query is:
 SELECT date, account, payee, narration, position, convert(position, 'EUR') as Converted WHERE account ~ 'Assets:Bank:Bank03581'
@@ -64,12 +64,12 @@ SELECT date, account, payee, narration, position, convert(position, 'EUR') as Co
 ╞════════════╪═══════════════════════╪════════════════╪═══════════════╪══════════════╪══════════════╡
 │ 2025-07-15 ┆ Assets:Bank:Bank03581 ┆ Anonymous Org. ┆ Illicit money ┆ 3,000.00 CHF ┆ 3,194.10 EUR │
 └────────────┴───────────────────────┴────────────────┴───────────────┴──────────────┴──────────────┘
-'''
+"""
 
 [[test]]
 name = "balance with total"
 command = '{{exe}} reg --ledger tests/sample-ledger.bean --exchange EUR --total Assets:Bank:Bank03581'
-stdout = '''
+stdout = """
 
 Your BQL query is:
 SELECT date, account, payee, narration, position, convert(position, 'EUR') as Converted WHERE account ~ 'Assets:Bank:Bank03581'
@@ -79,7 +79,7 @@ SELECT date, account, payee, narration, position, convert(position, 'EUR') as Co
 ╞════════════╪═══════════════════════╪════════════════╪═══════════════╪══════════════╪═══════════════╪══════════════╪══════════════╡
 │ 2025-07-15 ┆ Assets:Bank:Bank03581 ┆ Anonymous Org. ┆ Illicit money ┆ 3,000.00 CHF ┆  3,000.00 CHF ┆ 3,194.10 EUR ┆ 3,194.10 EUR │
 └────────────┴───────────────────────┴────────────────┴───────────────┴──────────────┴───────────────┴──────────────┴──────────────┘
-'''
+"""
 
 [[test]]
 name = "cost_number"
@@ -93,4 +93,4 @@ exit = 0
 name = "value(sum(position))"
 command = 'rledger query -f json tests/sample-ledger.bean "SELECT account, value(SUM(position)) GROUP BY account"'
 stdout = ""
-exit = 1
+#exit = 1

@@ -1,0 +1,121 @@
+{
+  "columns": [
+    "account",
+    "convert"
+  ],
+  "row_count": 16,
+  "rows": [
+    {
+      "account": "Assets:Bank:Bank03581",
+      "convert": {
+        "currency": "EUR",
+        "number": "3194.1000"
+      }
+    },
+    {
+      "account": "Assets:Bank:Checking",
+      "convert": {
+        "currency": "EUR",
+        "number": "1369.80"
+      }
+    },
+    {
+      "account": "Assets:Bank:Savings",
+      "convert": {
+        "currency": "EUR",
+        "number": "500"
+      }
+    },
+    {
+      "account": "Assets:Cash:BAM",
+      "convert": {
+        "currency": "EUR",
+        "number": "-12.782297029905462131166819202"
+      }
+    },
+    {
+      "account": "Assets:Cash:Pocket-Money",
+      "convert": {
+        "currency": "EUR",
+        "number": "-45"
+      }
+    },
+    {
+      "account": "Assets:Cash:USD",
+      "convert": {
+        "currency": "EUR",
+        "number": "-6.1810154525386313465783664461"
+      }
+    },
+    {
+      "account": "Equity:Opening-Balances",
+      "convert": {
+        "currency": "EUR",
+        "number": "-1000"
+      }
+    },
+    {
+      "account": "Equity:Stocks",
+      "convert": {
+        "currency": "EUR",
+        "number": "5.20"
+      }
+    },
+    {
+      "account": "Expenses:Accommodation",
+      "convert": {
+        "currency": "EUR",
+        "number": "25"
+      }
+    },
+    {
+      "account": "Expenses:Food",
+      "convert": {
+        "currency": "EUR",
+        "number": "112.78229702990546213116681920"
+      }
+    },
+    {
+      "account": "Expenses:Sweets",
+      "convert": {
+        "currency": "EUR",
+        "number": "20"
+      }
+    },
+    {
+      "account": "Expenses:Transport",
+      "convert": {
+        "currency": "EUR",
+        "number": "6.1810154525386313465783664461"
+      }
+    },
+    {
+      "account": "Expenses:Transport:Bus",
+      "convert": {
+        "currency": "EUR",
+        "number": "10"
+      }
+    },
+    {
+      "account": "Expenses:Transport:Train",
+      "convert": {
+        "currency": "EUR",
+        "number": "15"
+      }
+    },
+    {
+      "account": "Income:Other",
+      "convert": {
+        "currency": "EUR",
+        "number": "-3194.1000"
+      }
+    },
+    {
+      "account": "Income:Salary",
+      "convert": {
+        "currency": "EUR",
+        "number": "-1000"
+      }
+    }
+  ]
+}

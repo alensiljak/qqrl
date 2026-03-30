@@ -1,0 +1,34 @@
+{
+  "columns": [
+    "date",
+    "account",
+    "amount"
+  ],
+  "row_count": 3,
+  "rows": [
+    {
+      "account": "Assets:Bank:Checking",
+      "amount": {
+        "currency": "EUR",
+        "number": "595.47"
+      },
+      "date": "2025-11-07"
+    },
+    {
+      "account": "Assets:Bank:Savings",
+      "amount": {
+        "currency": "EUR",
+        "number": "5775.09"
+      },
+      "date": "2025-11-08"
+    },
+    {
+      "account": "Assets:Cash:Pocket-Money",
+      "amount": {
+        "currency": "EUR",
+        "number": "0.00"
+      },
+      "date": "2025-11-09"
+    }
+  ]
+}

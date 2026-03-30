@@ -1,0 +1,138 @@
+{
+  "columns": [
+    "date",
+    "currency",
+    "amount"
+  ],
+  "row_count": 16,
+  "rows": [
+    {
+      "amount": {
+        "currency": "BAM",
+        "number": "1.95583"
+      },
+      "currency": "EUR",
+      "date": "2025-01-01"
+    },
+    {
+      "amount": {
+        "currency": "USD",
+        "number": "1.0268"
+      },
+      "currency": "EUR",
+      "date": "2025-01-01"
+    },
+    {
+      "amount": {
+        "currency": "USD",
+        "number": "1.1325"
+      },
+      "currency": "EUR",
+      "date": "2025-01-01"
+    },
+    {
+      "amount": {
+        "currency": "EUR",
+        "number": "1.0647"
+      },
+      "currency": "CHF",
+      "date": "2025-01-10"
+    },
+    {
+      "amount": {
+        "currency": "EUR",
+        "number": "1.20"
+      },
+      "currency": "ABC",
+      "date": "2025-03-30"
+    },
+    {
+      "amount": {
+        "currency": "EUR",
+        "number": "1.25"
+      },
+      "currency": "ABC",
+      "date": "2025-04-01"
+    },
+    {
+      "amount": {
+        "currency": "EUR",
+        "number": "1.25"
+      },
+      "currency": "ABC",
+      "date": "2025-04-01"
+    },
+    {
+      "amount": {
+        "currency": "EUR",
+        "number": "1.30"
+      },
+      "currency": "ABC",
+      "date": "2025-04-02"
+    },
+    {
+      "amount": {
+        "currency": "EUR",
+        "number": "1.30"
+      },
+      "currency": "ABC",
+      "date": "2025-04-02"
+    },
+    {
+      "amount": {
+        "currency": "EUR",
+        "number": "1.35"
+      },
+      "currency": "ABC",
+      "date": "2025-04-15"
+    },
+    {
+      "amount": {
+        "currency": "EUR",
+        "number": "1.35"
+      },
+      "currency": "ABC",
+      "date": "2025-09-09"
+    },
+    {
+      "amount": {
+        "currency": "EUR",
+        "number": "1.35"
+      },
+      "currency": "ABC",
+      "date": "2025-09-09"
+    },
+    {
+      "amount": {
+        "currency": "EUR",
+        "number": "1.25"
+      },
+      "currency": "ABC",
+      "date": "2025-09-09"
+    },
+    {
+      "amount": {
+        "currency": "EUR",
+        "number": "1.40"
+      },
+      "currency": "ABC",
+      "date": "2025-09-10"
+    },
+    {
+      "amount": {
+        "currency": "EUR",
+        "number": "1.40"
+      },
+      "currency": "ABC",
+      "date": "2025-09-10"
+    },
+    {
+      "amount": {
+        "currency": "EUR",
+        "number": "1.30"
+      },
+      "currency": "ABC",
+      "date": "2025-09-10"
+    }
+  ]
+}
