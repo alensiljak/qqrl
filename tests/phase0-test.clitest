@@ -1,0 +1,96 @@
+# Phase 0 tests
+
+[vars]
+exe = "cargo run"
+
+[[test]]
+name = "read prices"
+command = 'rledger query -f json tests/sample-ledger.bean "SELECT date, currency, amount FROM #prices"'
+#stdout = ""
+
+[[test]]
+name = "read balances"
+command = 'rledger query -f json tests/sample-ledger.bean "SELECT date, account, amount FROM #balances"'
+# stdout = ""
+
+[[test]]
+name = "supported row-level conversion aggregated afterwards"
+command = '''rledger query -f json tests/sample-ledger.bean "SELECT account, sum(convert(position, 'EUR')) GROUP BY account"'''
+# stdout = ""
+
+[[test]]
+name = "convert, fail"
+# Unsupported aggregate conversion shape; should currently fail with unknown function: convert
+command = '''rledger query -f json tests/sample-ledger.bean "SELECT account, convert(sum(position), 'EUR') GROUP BY account"'''
+# stdout = ""
+
+[[test]]
+name = "balance exchange workaround"
+command = '''rledger query -f json tests/sample-ledger.bean "SELECT account, units(sum(position)) as Balance, sum(convert(position, 'EUR')) as Converted GROUP BY account"'''
+stdout_file = "balance-exchange.out"
+compare = "whitespace"
+
+[[test]]
+name = "register exchange"
+command = '''rledger query -f json tests/sample-ledger.bean "SELECT date, account, payee, narration, position, convert(position, 'EUR') as Converted WHERE account = 'Assets:Bank:Bank03581'"'''
+stdout_file = "query-accounts.out"
+compare = "whitespace"
+
+[[test]]
+name = "End-to-end qqrl exchange probes"
+command = '{{exe}} bal --ledger tests/sample-ledger.bean --exchange EUR Assets:Bank:Bank03581'
+stdout = '''
+
+Your BQL query is:
+SELECT account, units(sum(position)) as Balance, convert(sum(position), 'EUR') as Converted WHERE account ~ 'Assets:Bank:Bank03581' GROUP BY account ORDER BY account ASC
+
+┌───────────────────────┬──────────────┬──────────────┐
+│ Account               ┆      Balance ┆  Total (EUR) │
+╞═══════════════════════╪══════════════╪══════════════╡
+│ Assets:Bank:Bank03581 ┆ 3,000.00 CHF ┆ 3,194.10 EUR │
+└───────────────────────┴──────────────┴──────────────┘
+'''
+
+[[test]]
+name = "balance with exchange"
+command = '{{exe}} reg --ledger tests/sample-ledger.bean --exchange EUR Assets:Bank:Bank03581'
+stdout = '''
+
+Your BQL query is:
+SELECT date, account, payee, narration, position, convert(position, 'EUR') as Converted WHERE account ~ 'Assets:Bank:Bank03581'
+
+┌────────────┬───────────────────────┬────────────────┬───────────────┬──────────────┬──────────────┐
+│ Date       ┆ Account               ┆ Payee          ┆ Narration     ┆       Amount ┆ Amount (EUR) │
+╞════════════╪═══════════════════════╪════════════════╪═══════════════╪══════════════╪══════════════╡
+│ 2025-07-15 ┆ Assets:Bank:Bank03581 ┆ Anonymous Org. ┆ Illicit money ┆ 3,000.00 CHF ┆ 3,194.10 EUR │
+└────────────┴───────────────────────┴────────────────┴───────────────┴──────────────┴──────────────┘
+'''
+
+[[test]]
+name = "balance with total"
+command = '{{exe}} reg --ledger tests/sample-ledger.bean --exchange EUR --total Assets:Bank:Bank03581'
+stdout = '''
+
+Your BQL query is:
+SELECT date, account, payee, narration, position, convert(position, 'EUR') as Converted WHERE account ~ 'Assets:Bank:Bank03581'
+
+┌────────────┬───────────────────────┬────────────────┬───────────────┬──────────────┬───────────────┬──────────────┬──────────────┐
+│ Date       ┆ Account               ┆ Payee          ┆ Narration     ┆       Amount ┆ Running Total ┆ Amount (EUR) ┆  Total (EUR) │
+╞════════════╪═══════════════════════╪════════════════╪═══════════════╪══════════════╪═══════════════╪══════════════╪══════════════╡
+│ 2025-07-15 ┆ Assets:Bank:Bank03581 ┆ Anonymous Org. ┆ Illicit money ┆ 3,000.00 CHF ┆  3,000.00 CHF ┆ 3,194.10 EUR ┆ 3,194.10 EUR │
+└────────────┴───────────────────────┴────────────────┴───────────────┴──────────────┴───────────────┴──────────────┴──────────────┘
+'''
+
+[[test]]
+name = "cost_number"
+command = 'rledger query -f json tests/sample-ledger.bean "SELECT account, cost_number WHERE cost_number IS NOT NULL LIMIT 5"'
+stdout_file  = "cost_number.out"
+compare = "whitespace"
+exit = 0
+
+[[test]]
+# TODO: Fails!
+name = "value(sum(position))"
+command = 'rledger query -f json tests/sample-ledger.bean "SELECT account, value(SUM(position)) GROUP BY account"'
+stdout = ""
+exit = 1

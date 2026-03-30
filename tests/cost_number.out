@@ -1,0 +1,25 @@
+{
+  "columns": [
+    "account",
+    "cost_number"
+  ],
+  "row_count": 4,
+  "rows": [
+    {
+      "account": "Equity:Stocks",
+      "cost_number": "1.25"
+    },
+    {
+      "account": "Equity:Stocks",
+      "cost_number": "1.30"
+    },
+    {
+      "account": "Equity:Stocks",
+      "cost_number": "1.25"
+    },
+    {
+      "account": "Equity:Stocks",
+      "cost_number": "1.30"
+    }
+  ]
+}

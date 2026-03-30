@@ -1,0 +1,318 @@
+{
+  "columns": [
+    "account",
+    "Balance",
+    "Converted"
+  ],
+  "row_count": 16,
+  "rows": [
+    {
+      "Balance": {
+        "positions": [
+          {
+            "currency": "CHF",
+            "number": "3000"
+          }
+        ]
+      },
+      "Converted": {
+        "positions": [
+          {
+            "currency": "EUR",
+            "number": "3194.1000"
+          }
+        ]
+      },
+      "account": "Assets:Bank:Bank03581"
+    },
+    {
+      "Balance": {
+        "positions": [
+          {
+            "currency": "EUR",
+            "number": "1369.80"
+          }
+        ]
+      },
+      "Converted": {
+        "positions": [
+          {
+            "currency": "EUR",
+            "number": "1369.80"
+          }
+        ]
+      },
+      "account": "Assets:Bank:Checking"
+    },
+    {
+      "Balance": {
+        "positions": [
+          {
+            "currency": "EUR",
+            "number": "500"
+          }
+        ]
+      },
+      "Converted": {
+        "positions": [
+          {
+            "currency": "EUR",
+            "number": "500"
+          }
+        ]
+      },
+      "account": "Assets:Bank:Savings"
+    },
+    {
+      "Balance": {
+        "positions": [
+          {
+            "currency": "BAM",
+            "number": "-25"
+          }
+        ]
+      },
+      "Converted": {
+        "positions": [
+          {
+            "currency": "EUR",
+            "number": "-12.782297029905462131166819202"
+          }
+        ]
+      },
+      "account": "Assets:Cash:BAM"
+    },
+    {
+      "Balance": {
+        "positions": [
+          {
+            "currency": "EUR",
+            "number": "-45"
+          }
+        ]
+      },
+      "Converted": {
+        "positions": [
+          {
+            "currency": "EUR",
+            "number": "-45"
+          }
+        ]
+      },
+      "account": "Assets:Cash:Pocket-Money"
+    },
+    {
+      "Balance": {
+        "positions": [
+          {
+            "currency": "USD",
+            "number": "-7"
+          }
+        ]
+      },
+      "Converted": {
+        "positions": [
+          {
+            "currency": "EUR",
+            "number": "-6.1810154525386313465783664461"
+          }
+        ]
+      },
+      "account": "Assets:Cash:USD"
+    },
+    {
+      "Balance": {
+        "positions": [
+          {
+            "currency": "EUR",
+            "number": "-1000"
+          }
+        ]
+      },
+      "Converted": {
+        "positions": [
+          {
+            "currency": "EUR",
+            "number": "-1000"
+          }
+        ]
+      },
+      "account": "Equity:Opening-Balances"
+    },
+    {
+      "Balance": {
+        "positions": [
+          {
+            "currency": "ABC",
+            "number": "4"
+          }
+        ]
+      },
+      "Converted": {
+        "positions": [
+          {
+            "currency": "EUR",
+            "number": "5.20"
+          }
+        ]
+      },
+      "account": "Equity:Stocks"
+    },
+    {
+      "Balance": {
+        "positions": [
+          {
+            "currency": "EUR",
+            "number": "25"
+          }
+        ]
+      },
+      "Converted": {
+        "positions": [
+          {
+            "currency": "EUR",
+            "number": "25"
+          }
+        ]
+      },
+      "account": "Expenses:Accommodation"
+    },
+    {
+      "Balance": {
+        "positions": [
+          {
+            "currency": "EUR",
+            "number": "100"
+          },
+          {
+            "currency": "BAM",
+            "number": "25"
+          }
+        ]
+      },
+      "Converted": {
+        "positions": [
+          {
+            "currency": "EUR",
+            "number": "112.78229702990546213116681920"
+          }
+        ]
+      },
+      "account": "Expenses:Food"
+    },
+    {
+      "Balance": {
+        "positions": [
+          {
+            "currency": "EUR",
+            "number": "20"
+          }
+        ]
+      },
+      "Converted": {
+        "positions": [
+          {
+            "currency": "EUR",
+            "number": "20"
+          }
+        ]
+      },
+      "account": "Expenses:Sweets"
+    },
+    {
+      "Balance": {
+        "positions": [
+          {
+            "currency": "USD",
+            "number": "7"
+          }
+        ]
+      },
+      "Converted": {
+        "positions": [
+          {
+            "currency": "EUR",
+            "number": "6.1810154525386313465783664461"
+          }
+        ]
+      },
+      "account": "Expenses:Transport"
+    },
+    {
+      "Balance": {
+        "positions": [
+          {
+            "currency": "EUR",
+            "number": "10"
+          }
+        ]
+      },
+      "Converted": {
+        "positions": [
+          {
+            "currency": "EUR",
+            "number": "10"
+          }
+        ]
+      },
+      "account": "Expenses:Transport:Bus"
+    },
+    {
+      "Balance": {
+        "positions": [
+          {
+            "currency": "EUR",
+            "number": "15"
+          }
+        ]
+      },
+      "Converted": {
+        "positions": [
+          {
+            "currency": "EUR",
+            "number": "15"
+          }
+        ]
+      },
+      "account": "Expenses:Transport:Train"
+    },
+    {
+      "Balance": {
+        "positions": [
+          {
+            "currency": "CHF",
+            "number": "-3000"
+          }
+        ]
+      },
+      "Converted": {
+        "positions": [
+          {
+            "currency": "EUR",
+            "number": "-3194.1000"
+          }
+        ]
+      },
+      "account": "Income:Other"
+    },
+    {
+      "Balance": {
+        "positions": [
+          {
+            "currency": "EUR",
+            "number": "-1000"
+          }
+        ]
+      },
+      "Converted": {
+        "positions": [
+          {
+            "currency": "EUR",
+            "number": "-1000"
+          }
+        ]
+      },
+      "account": "Income:Salary"
+    }
+  ]
+}

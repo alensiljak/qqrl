@@ -1,0 +1,5 @@
+# Run with clitestrunner
+
+[[test]]
+name = "balance"
+command = "cargo run b"

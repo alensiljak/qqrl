@@ -1,0 +1,30 @@
+{
+  "columns": [
+    "date",
+    "account",
+    "payee",
+    "narration",
+    "position",
+    "Converted"
+  ],
+  "row_count": 1,
+  "rows": [
+    {
+      "Converted": {
+        "currency": "EUR",
+        "number": "3194.1000"
+      },
+      "account": "Assets:Bank:Bank03581",
+      "date": "2025-07-15",
+      "narration": "Illicit money",
+      "payee": "Anonymous Org.",
+      "position": {
+        "cost": null,
+        "units": {
+          "currency": "CHF",
+          "number": "3000"
+        }
+      }
+    }
+  ]
+}
