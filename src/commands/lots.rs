@@ -120,8 +120,8 @@ fn build_query(opts: &LotsOptions) -> String {
     if currencies.len() == 1 {
         where_clauses.push(format!("currency = '{}'", currencies[0]));
     } else if currencies.len() > 1 {
-        let conditions: Vec<String> = currencies.iter().map(|c| format!("currency = '{c}'")).collect();
-        where_clauses.push(format!("({})", conditions.join(" OR ")));
+        let list = currencies.join("', '");
+        where_clauses.push(format!("currency IN ('{list}')"));
     }
 
     where_clauses.push("cost_number IS NOT NULL".to_string());
@@ -562,9 +562,8 @@ mod tests {
         };
 
         let query = build_query(&opts);
-        assert!(query.contains("currency = 'USD' OR currency = 'GBP'"));
-        assert!(!query.contains("currency = 'usd'"));
-        assert!(!query.contains("currency = 'gbp'"));
+        assert!(query.contains("currency IN ('USD', 'GBP')"));
+        assert!(!query.contains("currency IN ('usd', 'gbp')"));
     }
 
     #[test]

@@ -34,6 +34,7 @@ pub fn run(opts: CommonOptions) -> Result<(), Box<dyn std::error::Error>> {
     let config = Config::load(opts.ledger.clone())?;
     let query = build_query(&opts);
     println!("\nYour BQL query is:\n{query}\n");
+
     let rows = run_bql_query(&config, &query)?;
     let register_rows = parse_rows(&rows)?;
     // Capitalize exchange value for display
@@ -94,8 +95,8 @@ fn build_query(opts: &CommonOptions) -> String {
     if currencies.len() == 1 {
         where_clauses.push(format!("currency = '{}'", currencies[0]));
     } else if currencies.len() > 1 {
-        let conditions: Vec<String> = currencies.iter().map(|c| format!("currency = '{c}'")).collect();
-        where_clauses.push(format!("({})", conditions.join(" OR ")));
+        let list = currencies.join("', '");
+        where_clauses.push(format!("currency IN ('{list}')"));
     }
 
     // Amount filters go directly into WHERE for register (unlike balance post-filtering)
@@ -430,9 +431,8 @@ mod tests {
         };
 
         let q = build_query(&opts);
-        assert!(q.contains("currency = 'EUR' OR currency = 'GBP'"));
-        assert!(!q.contains("currency = 'Eur'"));
-        assert!(!q.contains("currency = 'gbp'"));
+        assert!(q.contains("currency IN ('EUR', 'GBP')"));
+        assert!(!q.contains("currency IN ('Eur', 'gbp')"));
     }
 
     #[test]

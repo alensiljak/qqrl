@@ -1,6 +1,6 @@
 [package]
 name = "qqrl"
-version = "1.0.0"
+version = "1.0.1"
 description = "Quick Query for Rust Ledger"
 edition = "2021"
 license = "AGPL-3.0"
