@@ -99,7 +99,7 @@ Validate rledger behavior before committing to any implementation.
 5. For any missing feature: either find the rledger equivalent syntax, or file an issue upstream
 6. **Gate**: do not start Phase 1 until all 6 commands have a confirmed working query pattern
 
-### Phase 0 results
+#### Phase 0 results
 
 The queries from `/tests/phase0-test.cmd` have been executed with the following results:
 
@@ -170,7 +170,7 @@ error: failed to parse query: parse error at position 35: found '.' expected ide
 ...
 ```
 
-### Revised Plan Based on Phase 0 Results
+#### Revised Plan Based on Phase 0 Results
 
 **Summary**: 4 of 6 commands are unblocked for Phase 1 work. The `lots` command is now implemented in qqrl for the supported `rledger` query shapes. The `assert` and `price` commands still depend on rledger's `#balances` and `#prices` system tables, which are pending feature requests.
 
@@ -247,7 +247,7 @@ Full rewrite. No intermediate Python step — go straight to Rust.
 
 ### Lots status
 
-Implemented in qqrl today:
+Implemented in qqrl:
 
 - dedicated `lots` CLI options: `--all`, `--average`, `--sort-by`
 - default active-lot view using grouped positions with positive remaining quantity
@@ -256,17 +256,8 @@ Implemented in qqrl today:
 - account, date, currency, and amount filters
 - sort and limit support
 - integration coverage in `tests/lots_tests.rs`
-
-Still pending for full parity:
-
 - market value / `Value` column in output
 - any exchange-driven valuation for lots
-
-Current blocker details:
-
-- `value(position)` currently fails for the detailed query shape unless a target currency is provided
-- `value(SUM(position))` returns an inventory-like structure in current testing rather than a directly displayable market-value amount
-- until that behavior is fixed or clarified upstream, `lots` uses `price` and `cost` columns only
 
 ## Tests
 
@@ -284,27 +275,27 @@ Current blocker details:
 
 ## Complexity by Command
 
-| Command  | Query Building          | Output/JSON Parsing                                      | Risk                                |
-|----------|-------------------------|----------------------------------------------------------|-------------------------------------|
-| `bal`    | Easy                    | Medium — hierarchy mode needs parent-account aggregation | Low                                 |
-| `reg`    | Easy                    | Medium — running totals, multi-currency                  | Low                                 |
-| `query`  | Easy — .bean regex scan | Easy                                                     | Low                                 |
-| `lots`   | Medium                  | High — mixed JSON shapes, active lot aggregation, blocked market value output | **High** |
-| `assert` | Easy                    | Easy                                                     | Medium — `#balances` compat unclear |
-| `price`  | Easy                    | Easy                                                     | Medium — `#prices` compat unclear   |
+| Command  | Query Building          | Output/JSON Parsing                                                   | Risk     |
+|----------|-------------------------|-----------------------------------------------------------------------|----------|
+| `bal`    | Easy                    | Medium — hierarchy mode needs parent-account aggregation              | Low      |
+| `reg`    | Easy                    | Medium — running totals, multi-currency                               | Low      |
+| `query`  | Easy — .bean regex scan | Easy                                                                  | Low      |
+| `lots`   | Medium                  | High — mixed JSON shapes, active lot aggregation, market value output | **High** |
+| `assert` | Easy                    | Easy                                                                  | Low      |
+| `price`  | Easy                    | Easy                                                                  | Low      |
 
 ---
 
 ## Known Risks
 
-| Risk                                         | Impact                             | Mitigation                                                                                      |
-|----------------------------------------------|------------------------------------|-------------------------------------------------------------------------------------------------|
-| `convert(position, 'EUR')` not in rledger    | `--exchange/-X` broken             | Phase 0 test; workaround with two queries + post-processing, or file rledger issue              |
-| `value(position)` not in usable rledger shape | `lots` market value column broken  | Current implementation omits the value column until upstream behavior is stable                  |
-| `cost_number` column not in rledger          | `lots` cost per unit broken        | Phase 0 test; find rledger equivalent                                                           |
-| `#balances` / `#prices` tables not supported | `assert` / `price` commands broken | Phase 0 test; rledger uses `BALANCES` shorthand — find exact equivalent                         |
-| rledger JSON schema changes                  | Output parser breaks silently      | Pin rledger minimum version in docs; test on CI with rledger installed                          |
-| rledger not on `$PATH`                       | All commands fail                  | Clear error message: "rledger not found. Install from https://github.com/rustledger/rustledger" |
+| Risk                                          | Impact                             | Mitigation                                                                                      |
+|-----------------------------------------------|------------------------------------|-------------------------------------------------------------------------------------------------|
+| `convert(position, 'EUR')` not in rledger     | `--exchange/-X` broken             | Phase 0 test; workaround with two queries + post-processing, or file rledger issue              |
+| `value(position)` not in usable rledger shape | `lots` market value column broken  | Current implementation omits the value column until upstream behavior is stable                 |
+| `cost_number` column not in rledger           | `lots` cost per unit broken        | Phase 0 test; find rledger equivalent                                                           |
+| `#balances` / `#prices` tables not supported  | `assert` / `price` commands broken | Phase 0 test; rledger uses `BALANCES` shorthand — find exact equivalent                         |
+| rledger JSON schema changes                   | Output parser breaks silently      | Pin rledger minimum version in docs; test on CI with rledger installed                          |
+| rledger not on `$PATH`                        | All commands fail                  | Clear error message: "rledger not found. Install from https://github.com/rustledger/rustledger" |
 
 ---
 
