@@ -54,7 +54,7 @@ pub fn run(opts: CommonOptions) -> Result<(), Box<dyn std::error::Error>> {
     let (columns, rows) = run_bql_query_with_columns(&config, &query_string)?;
 
     // Format and display output
-    let formatted_rows = format_output(&rows)?;
+    let formatted_rows = format_output(&columns, &rows)?;
 
     // Print table with headers
     print_table(&columns, &formatted_rows);
@@ -172,12 +172,12 @@ fn run_bql_query_with_columns(
     Ok((columns, rows))
 }
 
-/// Format a row into a vector of string values
-fn format_row(row: &Value) -> Result<Vec<String>, Box<dyn std::error::Error>> {
+/// Format a row into a vector of string values, ordered by column names
+fn format_row(columns: &[String], row: &Value) -> Result<Vec<String>, Box<dyn std::error::Error>> {
     let mut formatted_row = Vec::new();
     if let Some(obj) = row.as_object() {
-        // Preserve the order from the object
-        for (_, value) in obj {
+        for col in columns {
+            let value = obj.get(col).unwrap_or(&Value::Null);
             formatted_row.push(format_value(value));
         }
     }
@@ -185,10 +185,10 @@ fn format_row(row: &Value) -> Result<Vec<String>, Box<dyn std::error::Error>> {
 }
 
 /// Format all rows
-fn format_output(rows: &[Value]) -> Result<Vec<Vec<String>>, Box<dyn std::error::Error>> {
+fn format_output(columns: &[String], rows: &[Value]) -> Result<Vec<Vec<String>>, Box<dyn std::error::Error>> {
     let mut formatted_output = Vec::new();
     for row in rows {
-        formatted_output.push(format_row(row)?);
+        formatted_output.push(format_row(columns, row)?);
     }
     Ok(formatted_output)
 }
@@ -223,6 +223,13 @@ fn format_value(value: &Value) -> String {
                     if let Some(number) = units.get("number").and_then(|n| n.as_f64()) {
                         return format!("{} {}", number, currency);
                     }
+                }
+            }
+            // Handle flat Amount objects: {"currency": "EUR", "number": "10"}
+            if let Some(currency) = obj.get("currency").and_then(|c| c.as_str()) {
+                if let Some(number) = obj.get("number") {
+                    let formatted = format_value(number);
+                    return format!("{} {}", formatted, currency);
                 }
             }
             // Fallback: serialize as compact JSON
