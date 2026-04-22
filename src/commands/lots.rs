@@ -127,12 +127,18 @@ fn build_query(opts: &LotsOptions) -> String {
     where_clauses.push("cost_number IS NOT NULL".to_string());
 
     let (select_clause, group_by, having_clause) = if opts.average {
-        let mut query = "SELECT MAX(date) as date, account, currency(units(position)) as symbol, SUM(units(position)) as quantity, SUM(cost_number * number(units(position))) / SUM(number(units(position))) as avg_price, cost(SUM(position)) as total_cost, value(SUM(position)) as value".to_string();
+        // Division is done in Rust (parse_average_rows) to avoid rledger panicking on division
+        // by zero when a group's net quantity is 0 (e.g. all lots in an account transferred out).
+        let mut query = "SELECT MAX(date) as date, account, currency(units(position)) as symbol, SUM(units(position)) as quantity, SUM(cost_number * number(units(position))) as total_weighted_cost, SUM(number(units(position))) as total_quantity, cost(SUM(position)) as total_cost, value(SUM(position)) as value".to_string();
         if opts.exchange.is_some() {
             let exchange_upper = opts.exchange.as_ref().unwrap().to_uppercase();
             query.push_str(&format!(", convert(value(SUM(position)), '{exchange_upper}') as converted_value"));
         }
-        (query, Some(vec!["account", "currency(units(position))"]), None)
+        (
+            query,
+            Some(vec!["account", "currency(units(position))"]),
+            Some("HAVING SUM(number(units(position))) > 0".to_string()),
+        )
     } else if opts.closed {
         let mut query = "SELECT MAX(date) as date, account, currency(units(position)) as symbol, SUM(units(position)) as quantity, cost_number as price, cost(SUM(position)) as cost, value(SUM(position)) as value".to_string();
         if opts.exchange.is_some() {
@@ -236,6 +242,15 @@ fn parse_average_rows(
 ) -> Result<Vec<AverageLotsRow>, Box<dyn std::error::Error>> {
     let mut rows = Vec::new();
     for row in json_rows {
+        let total_quantity =
+            parse_decimal_value(&row["total_quantity"], "total_quantity")?;
+        if total_quantity.is_zero() {
+            continue;
+        }
+        let total_weighted_cost =
+            parse_decimal_value(&row["total_weighted_cost"], "total_weighted_cost")?;
+        let average_price = total_weighted_cost / total_quantity;
+
         let converted_value = if row.get("converted_value").is_some() {
             Some(parse_amount(&row["converted_value"], "converted_value")?)
         } else {
@@ -246,7 +261,7 @@ fn parse_average_rows(
             account: required_str(row, "account")?.to_string(),
             symbol: required_str(row, "symbol")?.to_string(),
             quantity: parse_quantity(&row["quantity"])?,
-            average_price: parse_decimal_value(&row["avg_price"], "avg_price")?,
+            average_price,
             total_cost: parse_amount(&row["total_cost"], "total_cost")?,
             value: parse_amount(&row["value"], "value")?,
             converted_value,

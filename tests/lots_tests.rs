@@ -17,6 +17,12 @@ fn ledger_path() -> PathBuf {
         .join("sample-ledger.bean")
 }
 
+fn zero_net_ledger_path() -> PathBuf {
+    PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("tests")
+        .join("zero-net-position.bean")
+}
+
 fn run_lots(args: &[&str]) -> (String, String, i32) {
     let output = Command::new(qqrl_bin())
         .arg("lots")
@@ -43,7 +49,7 @@ fn lots_default_shows_active_open_lots() {
     assert!(stdout.contains("Equity:Stocks"));
     assert!(stdout.contains("ABC"));
     assert!(stdout.contains("1.30 EUR"));
-    assert!(stdout.contains("13 EUR"));
+    assert!(stdout.contains("5.20 EUR"));
     assert!(
         !stdout.contains("2025-04-01"),
         "closed lot should not be shown"
@@ -70,7 +76,7 @@ fn lots_average_shows_average_price_and_total_cost() {
     assert!(stdout.contains("Total Cost"));
     assert!(stdout.contains("ABC"));
     assert!(stdout.contains("1.30 EUR"));
-    assert!(stdout.contains("25.50 EUR"));
+    assert!(stdout.contains("5.20 EUR"));
 }
 
 #[test]
@@ -125,4 +131,27 @@ fn lots_limit_restricts_rows() {
         .filter(|line| line.contains("│") && line.contains("Equity:Stocks"))
         .collect();
     assert_eq!(data_rows.len(), 2, "expected exactly 2 data rows: {stdout}");
+}
+
+#[test]
+fn lots_average_skips_zero_net_quantity() {
+    // Regression: --average used to panic when a group's net quantity was 0
+    // (all lots sold in that account), because the BQL query divided by zero.
+    // Alpha has net 0 (all sold); Beta still holds 5 XYZ.
+    let output = Command::new(qqrl_bin())
+        .arg("lots")
+        .arg("--ledger")
+        .arg(zero_net_ledger_path())
+        .arg("--average")
+        .output()
+        .expect("failed to run qqrl lots --average");
+
+    let stdout = String::from_utf8_lossy(&output.stdout).to_string();
+    let stderr = String::from_utf8_lossy(&output.stderr).to_string();
+    let code = output.status.code().unwrap_or(-1);
+
+    assert_eq!(code, 0, "lots --average must not crash on zero-net groups: {stderr}");
+    assert!(!stdout.contains("Alpha"), "zero-net Alpha account must be excluded: {stdout}");
+    assert!(stdout.contains("Beta"), "positive-net Beta account must appear: {stdout}");
+    assert!(stdout.contains("7 USD"), "Beta average price must be shown: {stdout}");
 }

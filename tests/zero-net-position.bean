@@ -1,0 +1,23 @@
+; Fixture: two accounts holding XYZ.
+; Alpha buys then sells all -> net quantity = 0.
+; Beta buys and holds -> net quantity = 5.
+; Used to verify that --average does not crash on zero-net groups.
+plugin "beancount.plugins.implicit_prices"
+
+1900-01-01 open Assets:Broker:Alpha USD
+1900-01-01 open Assets:Broker:Beta USD
+1900-01-01 open Assets:Cash USD
+
+; Alpha: buy 10 XYZ, sell all -> zero net
+2020-01-01 txn "Buy XYZ in Alpha"
+  Assets:Broker:Alpha 10 XYZ { 5.00 USD }
+  Assets:Cash
+
+2020-06-01 txn "Sell all XYZ from Alpha"
+  Assets:Broker:Alpha -10 XYZ { 5.00 USD, 2020-01-01 }
+  Assets:Cash
+
+; Beta: buy 5 XYZ, still holding -> positive net
+2021-01-01 txn "Buy XYZ in Beta"
+  Assets:Broker:Beta 5 XYZ { 7.00 USD }
+  Assets:Cash

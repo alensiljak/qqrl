@@ -301,7 +301,6 @@ fn list_queries(ledger_path: &std::path::Path) -> Result<(), Box<dyn std::error:
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::io::Write;
 
     #[test]
     fn test_parse_ledger_queries() {
