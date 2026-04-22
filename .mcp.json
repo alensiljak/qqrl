@@ -13,6 +13,10 @@
         "--open-web-dashboard",
         "false"
       ]
+    },
+    "agent-memory-store": {
+      "command": "npx",
+      "args": ["-y", "agent-memory-store"]
     }
   }
 }
