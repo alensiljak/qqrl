@@ -167,11 +167,15 @@ fn parse_rows(json_rows: &[Value]) -> Result<Vec<RegisterRow>, Box<dyn std::erro
         let units = &row["position"]["units"];
         let currency = units["currency"]
             .as_str()
-            .ok_or("missing currency in position")?
+            .ok_or_else(|| {
+                format!("missing currency in position for '{account}' on {date}: {units}")
+            })?
             .to_string();
         let number_str = units["number"]
             .as_str()
-            .ok_or("missing number in position")?;
+            .ok_or_else(|| {
+                format!("missing number in position for '{account}' on {date}: {units}")
+            })?;
         let amount = number_str
             .parse::<Decimal>()
             .map_err(|_| format!("invalid decimal: {number_str}"))?;

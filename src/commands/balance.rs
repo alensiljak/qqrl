@@ -255,9 +255,11 @@ fn parse_inventory_positions(
     for pos in positions_json {
         let currency = pos["currency"]
             .as_str()
-            .ok_or("missing currency in position")?
+            .ok_or_else(|| format!("missing currency in position {pos} (in {label})"))?
             .to_string();
-        let number_str = pos["number"].as_str().ok_or("missing number in position")?;
+        let number_str = pos["number"]
+            .as_str()
+            .ok_or_else(|| format!("missing number in position {pos} (in {label})"))?;
         let amount = number_str
             .parse::<Decimal>()
             .map_err(|_| format!("invalid decimal: {number_str}"))?;
