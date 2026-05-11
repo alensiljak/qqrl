@@ -164,17 +164,20 @@ fn parse_rows(json_rows: &[Value]) -> Result<Vec<RegisterRow>, Box<dyn std::erro
         let payee = row["payee"].as_str().unwrap_or("").to_string();
         let narration = row["narration"].as_str().unwrap_or("").to_string();
 
-        let units = &row["position"]["units"];
+        let position = &row["position"];
+        let units = &position["units"];
         let currency = units["currency"]
             .as_str()
             .ok_or_else(|| {
-                format!("missing currency in position for '{account}' on {date}: {units}")
+                format!(
+                    "missing currency in position for '{account}' on {date}\n  position={position}\n  units={units}\n  Hint: this account may have a pad/balance entry with no commodity."
+                )
             })?
             .to_string();
         let number_str = units["number"]
             .as_str()
             .ok_or_else(|| {
-                format!("missing number in position for '{account}' on {date}: {units}")
+                format!("missing number in position for '{account}' on {date}: position={position}, units={units}")
             })?;
         let amount = number_str
             .parse::<Decimal>()
