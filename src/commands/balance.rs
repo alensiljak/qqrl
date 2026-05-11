@@ -200,6 +200,7 @@ fn parse_rows(json_rows: &[Value]) -> Result<Vec<BalanceRow>, Box<dyn std::error
         let positions = parse_inventory_positions(&row["Balance"], "Balance")?;
         let converted_positions = row
             .get("Converted")
+            .filter(|v| !v.is_null())
             .map(|value| parse_amount_as_positions(value, "Converted"))
             .transpose()?;
 
