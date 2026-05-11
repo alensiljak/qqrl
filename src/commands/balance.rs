@@ -125,6 +125,10 @@ fn build_query(opts: &CommonOptions) -> String {
         }
     }
 
+    if !opts.closed {
+        where_clauses.push("NOT close_date(account)".to_string());
+    }
+
     // Currency filter — split comma-separated values, support -c EUR -c USD
     // Convert to uppercase for case-insensitive matching
     let currencies: Vec<String> = opts
@@ -607,6 +611,7 @@ mod tests {
             empty: false,
             depth: None,
             zero: false,
+            closed: false,
             ledger: None,
             list: false,
         };
@@ -635,6 +640,7 @@ mod tests {
             empty: false,
             depth: None,
             zero: false,
+            closed: false,
             ledger: None,
             list: false,
         };
@@ -661,6 +667,7 @@ mod tests {
             empty: false,
             depth: None,
             zero: false,
+            closed: false,
             ledger: None,
             list: false,
         };
@@ -687,6 +694,7 @@ mod tests {
             empty: false,
             depth: None,
             zero: false,
+            closed: false,
             ledger: None,
             list: false,
         };
@@ -715,6 +723,7 @@ mod tests {
             empty: false,
             depth: None,
             zero: false,
+            closed: false,
             ledger: None,
             list: false,
         };
@@ -743,6 +752,7 @@ mod tests {
             empty: false,
             depth: None,
             zero: false,
+            closed: false,
             ledger: None,
             list: false,
         };
@@ -769,6 +779,7 @@ mod tests {
             empty: false,
             depth: None,
             zero: false,
+            closed: false,
             ledger: None,
             list: false,
         };
@@ -796,6 +807,7 @@ mod tests {
             empty: false,
             depth: None,
             zero: false,
+            closed: false,
             ledger: None,
             list: false,
         };

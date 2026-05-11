@@ -111,6 +111,10 @@ pub struct CommonOptions {
     #[arg(short = 'Z', long)]
     pub zero: bool,
 
+    /// Include closed accounts (balance command only; default hides them)
+    #[arg(short = 'C', long)]
+    pub closed: bool,
+
     /// Ledger file path (overrides LEDGER_FILE env var)
     #[arg(long)]
     pub ledger: Option<PathBuf>,

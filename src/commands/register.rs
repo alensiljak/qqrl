@@ -372,6 +372,7 @@ mod tests {
             empty: false,
             depth: None,
             zero: false,
+            closed: false,
             ledger: None,
             list: false,
         };
@@ -400,6 +401,7 @@ mod tests {
             empty: false,
             depth: None,
             zero: false,
+            closed: false,
             ledger: None,
             list: false,
         };
@@ -426,6 +428,7 @@ mod tests {
             empty: false,
             depth: None,
             zero: false,
+            closed: false,
             ledger: None,
             list: false,
         };
