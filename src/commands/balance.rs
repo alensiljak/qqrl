@@ -215,21 +215,28 @@ fn parse_rows(json_rows: &[Value]) -> Result<Vec<BalanceRow>, Box<dyn std::error
 
 /// Parse a single Amount value (from `convert(sum(...))`) as a one-element positions vec.
 /// JSON shape: `{"currency": "EUR", "number": "3194.1000"}`
+/// Returns an empty vec when beancount couldn't convert (returns inventory shape instead of Amount).
 fn parse_amount_as_positions(
     value: &Value,
-    label: &str,
+    _label: &str,
 ) -> Result<Vec<Position>, Box<dyn std::error::Error>> {
-    let currency = value["currency"]
-        .as_str()
-        .ok_or_else(|| format!("missing currency in {label}"))?
-        .to_string();
+    // beancount returns an inventory {"positions":[...]} when it cannot convert
+    if value.get("positions").is_some() {
+        return Ok(vec![]);
+    }
+    let Some(currency) = value["currency"].as_str() else {
+        return Ok(vec![]);
+    };
     let number_str = value["number"]
         .as_str()
-        .ok_or_else(|| format!("missing number in {label}"))?;
+        .ok_or_else(|| format!("missing number in Converted"))?;
     let amount = number_str
         .parse::<Decimal>()
-        .map_err(|_| format!("invalid decimal in {label}: {number_str}"))?;
-    Ok(vec![Position { currency, amount }])
+        .map_err(|_| format!("invalid decimal in Converted: {number_str}"))?;
+    Ok(vec![Position {
+        currency: currency.to_string(),
+        amount,
+    }])
 }
 
 fn parse_inventory_positions(
