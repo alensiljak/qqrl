@@ -166,12 +166,20 @@ fn parse_rows(json_rows: &[Value]) -> Result<Vec<RegisterRow>, Box<dyn std::erro
 
         let position = &row["position"];
         let units = &position["units"];
+
+        // A null position means this is an elided (auto-balancing) posting with no explicit
+        // amount — common for Equity:Balance-Adjustment legs that offset multi-commodity lots.
+        if units.is_null() {
+            eprintln!(
+                "Note: skipping '{account}' on {date} — no position (elided auto-balance posting)"
+            );
+            continue;
+        }
+
         let currency = units["currency"]
             .as_str()
             .ok_or_else(|| {
-                format!(
-                    "missing currency in position for '{account}' on {date}\n  position={position}\n  units={units}\n  Hint: this account may have a pad/balance entry with no commodity."
-                )
+                format!("missing currency in position for '{account}' on {date}: position={position}, units={units}")
             })?
             .to_string();
         let number_str = units["number"]
