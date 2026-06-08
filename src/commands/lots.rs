@@ -82,21 +82,21 @@ fn build_query(opts: &LotsOptions) -> String {
 
     if let Some(begin) = &opts.begin {
         if let Ok(date) = parse_date(begin) {
-            where_clauses.push(format!("date >= date(\"{date}\")"));
+            where_clauses.push(format!("date >= {date}"));
         }
     }
     if let Some(end) = &opts.end {
         if let Ok(date) = parse_date(end) {
-            where_clauses.push(format!("date < date(\"{date}\")"));
+            where_clauses.push(format!("date < {date}"));
         }
     }
     if let Some(range) = &opts.date_range {
         if let Ok((begin, end)) = parse_date_range(range) {
             if let Some(begin) = begin {
-                where_clauses.push(format!("date >= date(\"{begin}\")"));
+                where_clauses.push(format!("date >= {begin}"));
             }
             if let Some(end) = end {
-                where_clauses.push(format!("date < date(\"{end}\")"));
+                where_clauses.push(format!("date < {end}"));
             }
         }
     }
