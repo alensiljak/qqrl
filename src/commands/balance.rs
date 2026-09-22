@@ -623,7 +623,8 @@ mod tests {
         assert!(q.contains("SELECT account, units(sum(position)) as Balance"));
         assert!(q.contains("GROUP BY account"));
         assert!(q.contains("ORDER BY account ASC"));
-        assert!(!q.contains("WHERE"));
+        // closed: false is the default, so closed accounts are hidden by default.
+        assert!(q.contains("WHERE NOT close_date(account)"));
     }
 
     #[test]
