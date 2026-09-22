@@ -286,6 +286,20 @@ fn parse_decimal_value(value: &Value, label: &str) -> Result<Decimal, Box<dyn st
 }
 
 fn parse_amount(value: &Value, label: &str) -> Result<Amount, Box<dyn std::error::Error>> {
+    // rledger's value(...) returns an inventory wrapper ({"positions": [...]})
+    // even for a single currency, while cost(...) returns a flat Amount.
+    if let Some(positions) = value["positions"].as_array() {
+        let first = positions
+            .first()
+            .ok_or_else(|| format!("empty positions array in {label}"))?;
+        let currency = first["currency"]
+            .as_str()
+            .ok_or_else(|| format!("missing currency in {label}"))?
+            .to_string();
+        let amount = parse_decimal_value(&first["number"], label)?;
+        return Ok(Amount { currency, amount });
+    }
+
     let currency = value["currency"]
         .as_str()
         .ok_or_else(|| format!("missing currency in {label}"))?
@@ -608,5 +622,29 @@ mod tests {
             .contains("GROUP BY account, currency(units(position)), cost_number, cost_currency"));
         assert!(query.contains("HAVING SUM(number(units(position))) <= 0"));
         assert!(query.contains("ORDER BY date ASC"));
+    }
+
+    /// rledger's `value(...)` (unlike `cost(...)`) returns an inventory
+    /// wrapper (`{"positions": [...]}`), not a flat `{"currency", "number"}`
+    /// Amount, even when there's a single currency. parse_amount must
+    /// unwrap it the same way parse_quantity already does.
+    #[test]
+    fn parse_amount_handles_inventory_wrapped_value() {
+        let value = serde_json::json!({
+            "positions": [
+                {"currency": "EUR", "number": "5.60"}
+            ]
+        });
+        let amount = parse_amount(&value, "value").unwrap();
+        assert_eq!(amount.currency, "EUR");
+        assert_eq!(amount.amount, "5.60".parse::<Decimal>().unwrap());
+    }
+
+    #[test]
+    fn parse_amount_handles_flat_amount() {
+        let value = serde_json::json!({"currency": "EUR", "number": "5.20"});
+        let amount = parse_amount(&value, "cost").unwrap();
+        assert_eq!(amount.currency, "EUR");
+        assert_eq!(amount.amount, "5.20".parse::<Decimal>().unwrap());
     }
 }
