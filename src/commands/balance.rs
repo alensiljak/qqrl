@@ -201,9 +201,11 @@ fn parse_rows(json_rows: &[Value]) -> Result<Vec<BalanceRow>, Box<dyn std::error
             .ok_or("missing account field")?
             .to_string();
 
-        let positions = parse_inventory_positions(&row["Balance"], "Balance")?;
+        // rledger lowercases column aliases in its JSON output regardless of the
+        // casing used in the query (e.g. `as Balance` comes back as "balance").
+        let positions = parse_inventory_positions(&row["balance"], "Balance")?;
         let converted_positions = row
-            .get("Converted")
+            .get("converted")
             .filter(|v| !v.is_null())
             .map(|value| parse_amount_as_positions(value, "Converted"))
             .transpose()?;

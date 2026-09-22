@@ -53,7 +53,35 @@ fn parse_rows_from_output(stdout: &[u8]) -> Result<Vec<Value>, RunnerError> {
         .and_then(Value::as_array)
         .ok_or(RunnerError::MissingRows)?;
 
-    Ok(rows.to_vec())
+    let columns: Vec<String> = payload
+        .get("columns")
+        .and_then(Value::as_array)
+        .map(|cols| {
+            cols.iter()
+                .filter_map(|c| c.as_str().map(String::from))
+                .collect()
+        })
+        .unwrap_or_default();
+
+    Ok(rows.iter().map(|row| normalize_row(row, &columns)).collect())
+}
+
+/// rledger emits each row as a positional array ordered per `columns`,
+/// e.g. `["Assets:Bank", {"positions": [...]}]`, rather than as a JSON
+/// object keyed by column name. Zip it into an object so callers can
+/// index rows by field name (e.g. `row["account"]`).
+fn normalize_row(row: &Value, columns: &[String]) -> Value {
+    let Some(values) = row.as_array() else {
+        return row.clone();
+    };
+
+    let map = columns
+        .iter()
+        .zip(values.iter())
+        .map(|(col, val)| (col.clone(), val.clone()))
+        .collect();
+
+    Value::Object(map)
 }
 
 #[cfg(test)]
@@ -76,5 +104,24 @@ mod tests {
             err.to_string(),
             "invalid JSON schema from rledger: missing rows array"
         );
+    }
+
+    /// rledger actually emits each row as a positional array (ordered per
+    /// "columns"), not as a JSON object keyed by column name. Callers
+    /// (balance/assert/register/lots/price) all index rows by field name,
+    /// e.g. `row["account"]`, so rows must be normalized into objects here.
+    #[test]
+    fn parse_rows_normalizes_array_shaped_rows_into_objects() {
+        let json = br#"{
+            "columns": ["account", "balance"],
+            "row_count": 1,
+            "rows": [
+                ["Assets:Bank:Checking", {"positions": [{"currency": "EUR", "number": "1369.80"}]}]
+            ]
+        }"#;
+        let rows = parse_rows_from_output(json).unwrap();
+        assert_eq!(rows.len(), 1);
+        assert_eq!(rows[0]["account"], "Assets:Bank:Checking");
+        assert_eq!(rows[0]["balance"]["positions"][0]["currency"], "EUR");
     }
 }

@@ -191,7 +191,9 @@ fn parse_rows(json_rows: &[Value]) -> Result<Vec<RegisterRow>, Box<dyn std::erro
             .parse::<Decimal>()
             .map_err(|_| format!("invalid decimal: {number_str}"))?;
 
-        let converted_amount = row.get("Converted").map(parse_position).transpose()?;
+        // rledger lowercases column aliases in its JSON output regardless of the
+        // casing used in the query (e.g. `as Converted` comes back as "converted").
+        let converted_amount = row.get("converted").map(parse_position).transpose()?;
 
         rows.push(RegisterRow {
             date,
