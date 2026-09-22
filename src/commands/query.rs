@@ -172,16 +172,21 @@ fn run_bql_query_with_columns(
     Ok((columns, rows))
 }
 
-/// Format a row into a vector of string values, ordered by column names
+/// Format a row into a vector of string values, ordered by column names.
+///
+/// rledger emits each row as a positional array ordered per `columns`
+/// (e.g. `["2025-08-15", "Holiday Co"]`), not as a JSON object keyed by
+/// column name, so rows are read by position rather than by key.
 fn format_row(columns: &[String], row: &Value) -> Result<Vec<String>, Box<dyn std::error::Error>> {
-    let mut formatted_row = Vec::new();
-    if let Some(obj) = row.as_object() {
-        for col in columns {
-            let value = obj.get(col).unwrap_or(&Value::Null);
-            formatted_row.push(format_value(value));
-        }
-    }
-    Ok(formatted_row)
+    let values = row
+        .as_array()
+        .ok_or("invalid JSON schema from rledger: row is not an array")?;
+
+    Ok(columns
+        .iter()
+        .enumerate()
+        .map(|(i, _)| values.get(i).map(format_value).unwrap_or_default())
+        .collect())
 }
 
 /// Format all rows
@@ -421,5 +426,17 @@ mod tests {
         // Test array
         let arr = serde_json::json!([1, 2, 3]);
         assert_eq!(format_value(&arr), "1, 2, 3");
+    }
+
+    /// rledger emits each row as a positional array ordered per `columns`
+    /// (e.g. `["2025-08-15", "holiday"]`), not as a JSON object keyed by
+    /// column name. format_row assumed rows were already objects, so real
+    /// rledger output silently produced empty rows.
+    #[test]
+    fn format_row_handles_array_shaped_rows() {
+        let columns = vec!["date".to_string(), "payee".to_string()];
+        let row = serde_json::json!(["2025-08-15", "Holiday Co"]);
+        let formatted = format_row(&columns, &row).unwrap();
+        assert_eq!(formatted, vec!["2025-08-15".to_string(), "Holiday Co".to_string()]);
     }
 }
