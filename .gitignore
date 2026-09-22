@@ -13,3 +13,5 @@
 # Agents
 .claude/*.local.json
 .agent-memory-store/
+
+**/*.bean.cache
